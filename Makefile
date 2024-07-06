@@ -5,7 +5,8 @@ compile:
 	sed '1d' -i temp/main.js
 	sed '1d' -i temp/main.js
 	sed '1d' -i temp/main.js
-	for i in {1..13}; do sed '$$d' -i temp/main.js; done
+	sed '1d' -i temp/main.js
+	for i in {1..14}; do sed '$$d' -i temp/main.js; done
 
 build: compile
 	mkdir -p build
@@ -19,12 +20,11 @@ minify:
 	stat temp/main.min.regpack.js | grep Size
 
 retail: compile
+	rm -rf retail
 	mkdir -p retail
 	terser --compress unsafe_arrows=true,unsafe=true,toplevel=true,passes=8 --mangle --mangle-props --toplevel --ecma 6 -O ascii_only=true -- temp/main.js > temp/main.min.js
 	regpack temp/main.min.js > temp/main.min.regpack.js
-	cat src/before.html > retail/index.html
-	cat temp/main.min.regpack.js >> retail/index.html
-	cat src/after.html >> retail/index.html
-	stat temp/main.min.regpack.js | grep Size
+	cat src/before.html temp/main.min.regpack.js src/after.html | tr -d '\n' > retail/index.html
+	stat retail/index.html | grep Size
 
 .PHONY: build retail

@@ -1,7 +1,6 @@
 @:native("")
 extern class Shim {
-    @:native("a") static var canvas:js.html.CanvasElement;
-    @:native("c") static var context:js.html.CanvasRenderingContext2D;
+    @:native("c") static var canvas:js.html.CanvasElement;
 }
 
 abstract Point(Array<Float>) from Array<Float> to Array<Float> {
@@ -28,7 +27,8 @@ class Main {
         var mmove:Int = 0;
         var textureCanvas:js.html.CanvasElement;
         function loop(t:Float) {
-            untyped setTimeout(loop, 10);
+        trace("yep");
+            untyped setTimeout(loop, 1000);
         }
         loop(0);
     }
