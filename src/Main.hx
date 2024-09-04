@@ -68,27 +68,28 @@ class Main {
         inline function draw(count) {
             Shim.g.dr(Shim.g.TRIANGLES, 0, count);
         }
-        {
-            var program;
-            var src = Macros.getFileContent("src/fs.glsl");
-            var vs = createShader(vertexShader());
-            shaderSource(vs, src);
-            compileShader(vs);
-            var src = Macros.getFileContent("src/vs.glsl");
-            var fs = createShader(fragmentShader());
-            shaderSource(fs, src);
-            compileShader(fs);
-            program = createProgram();
-            attachShader(program, vs);
-            attachShader(program, fs);
-            linkProgram(program);
-            useProgram(program);
-        }
+        var program;
+        var src = Macros.getFileContent("src/vs.glsl");
+        var vs = createShader(vertexShader());
+        shaderSource(vs, src);
+        compileShader(vs);
+        var src = Macros.getFileContent("src/fs.glsl");
+        var fs = createShader(fragmentShader());
+        shaderSource(fs, src);
+        compileShader(fs);
+        program = createProgram();
+        attachShader(program, vs);
+        attachShader(program, fs);
+        linkProgram(program);
+        useProgram(program);
+        // Get the uniform location for time
+        var timeUniformLocation = Shim.g.getUniformLocation(program, "uTime");
         function loop(t:Float) {
-            trace("yep");
-            draw(60);
-            untyped setTimeout(loop, 1000);
+            // Update time uniform
+            Shim.g.uniform1f(timeUniformLocation, t);
+            draw(36); // Change to 36 to draw all cube faces
+            js.Browser.window.requestAnimationFrame(loop);
         }
-        loop(0);
+        js.Browser.window.requestAnimationFrame(loop);
     }
 }
