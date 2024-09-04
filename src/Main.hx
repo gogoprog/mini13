@@ -15,14 +15,10 @@ abstract Point(Array<Float>) from Array<Float> to Array<Float> {
 
 class Main {
     static function main() {
-        var screenSize = 512;
-        var halfSize:Int = cast screenSize/ 2;
-        Shim.canvas.width = Shim.canvas.height = screenSize;
+        Shim.canvas.width = js.Browser.window.innerWidth;
+        Shim.canvas.height = js.Browser.window.innerHeight;
         var randomSeed = 0;
         var time:Int = 0;
-        var walls:Array<Dynamic> = [];
-        var camPos:Point = [screenSize, screenSize];
-        var camAngle:Float = 0;
         js.Syntax.code(" for(i in g=c.getContext(`webgl2`)) { g[i[0]+i[6]]=g[i]; } "); // From Xem
         inline function createProgram() {
             return Shim.g.cP();
@@ -72,8 +68,8 @@ class Main {
         inline function draw(count) {
             Shim.g.dr(Shim.g.TRIANGLES, 0, count);
         }
-        var program;
         {
+            var program;
             var src = Macros.getFileContent("src/fs.glsl");
             var vs = createShader(vertexShader());
             shaderSource(vs, src);
