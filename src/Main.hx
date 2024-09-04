@@ -23,50 +23,79 @@ class Main {
         var walls:Array<Dynamic> = [];
         var camPos:Point = [screenSize, screenSize];
         var camAngle:Float = 0;
-        {
-            js.Syntax.code(" for(i in g=c.getContext(`webgl`)) { g[i[0]+i[6]]=g[i]; } "); // From Xem
+        js.Syntax.code(" for(i in g=c.getContext(`webgl2`)) { g[i[0]+i[6]]=g[i]; } "); // From Xem
+        inline function createProgram() {
+            return Shim.g.cP();
         }
-        inline function createProgram(...args) {
-            return Shim.g.cP(args);
+        inline function createShader(a) {
+            return Shim.g.cS(a);
         }
-        inline function createShader(...args) {
-            return Shim.g.cS(args);
+        inline function shaderSource(a, b) {
+            Shim.g.sS(a, b);
         }
-        inline function shaderSource(...args) {
-            Shim.g.sS(args);
+        inline function compileShader(a) {
+            Shim.g.compileShader(a);
+#if dev
+
+            if(!Shim.g.getShaderParameter(a, Shim.g.COMPILE_STATUS)) {
+                // trace("An error occurred compiling the shaders: " + Shim.g.getShaderInfoLog(a));
+                trace("An error occurred compiling the shaders: ");
+                trace(Shim.g.getShaderInfoLog(a));
+            }
+
+#end
         }
-        inline function compileShader(...args) {
-            Shim.g.compilerShader(args);
+        inline function attachShader(a, b) {
+            Shim.g.aS(a, b);
         }
-        inline function attachShader(...args) {
-            Shim.g.aS(args);
+        inline function linkProgram(a) {
+            Shim.g.lo(a);
+#if dev
+
+            if(!Shim.g.getProgramParameter(a, Shim.g.LINK_STATUS)) {
+                // trace("An error occurred compiling the shaders: " + Shim.g.getShaderInfoLog(a));
+                trace("An error occurred linking the program: ");
+                trace(Shim.g.getProgramInfoLog(a));
+            }
+
+#end
         }
-        inline function linkProgram(...args) {
-            Shim.g.lo(args);
-        }
-        inline function useProgram(...args) {
-            Shim.g.ug(args);
+        inline function useProgram(a) {
+            Shim.g.ug(a);
         }
         inline function fragmentShader() {
-            return Shim.g.FN;
+            return Shim.g.FRAGMENT_SHADER;
         }
         inline function vertexShader() {
-            return Shim.g.V_;
+            return Shim.g.VERTEX_SHADER;
         }
+        inline function draw(count) {
+            Shim.g.dr(Shim.g.TRIANGLES, 0, count);
+        }
+        var program;
         {
-            var src = "attribute vec3 aVertexPosition;
-            void main(void) {
-                gl_Position = vec4(aVertexPosition, 1.0);
+            var src = "#version 300 es
+            void main() {
+                float angle = float(gl_VertexID) * 3.1415 * 0.1;
+                float radius = 0.9;
+                vec2 pos = vec2(cos(angle), sin(angle)) * radius;
+                gl_Position = vec4(pos, 0.0, 1.0);
+                gl_PointSize = 3.0;
             }";
             var vs = createShader(vertexShader());
             shaderSource(vs, src);
             compileShader(vs);
-            var src="void main(void){gl_FragColor=vec4(1.0,1.0,1.0,1.0);}";
+            var src = "#version 300 es
+                      precision highp float;
+            out vec4 outColor;
+            void main() {
+                outColor = vec4(1, 0, 0, 1);
+            }
+            ";
             var fs = createShader(fragmentShader());
-            shaderSource(vs, src);
-            compileShader(vs);
-
-            var program = createProgram();
+            shaderSource(fs, src);
+            compileShader(fs);
+            program = createProgram();
             attachShader(program, vs);
             attachShader(program, fs);
             linkProgram(program);
@@ -74,6 +103,7 @@ class Main {
         }
         function loop(t:Float) {
             trace("yep");
+            draw(60);
             untyped setTimeout(loop, 1000);
         }
         loop(0);

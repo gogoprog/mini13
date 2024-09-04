@@ -10,9 +10,9 @@ compile:
 
 build: compile
 	mkdir -p build
-	cat src/before.html > build/index.html
+	cat src/before_dev.html > build/index.html
 	cat temp/main.js >> build/index.html
-	cat src/after.html >> build/index.html
+	cat src/after_dev.html >> build/index.html
 
 minify:
 	terser --compress unsafe_arrows=true,unsafe=true,toplevel=true,passes=8 --mangle --mangle-props --toplevel --ecma 6 -O ascii_only=true -- temp/main.js > temp/main.min.js
@@ -20,6 +20,10 @@ minify:
 	stat temp/main.min.regpack.js | grep Size
 
 retail: compile
+	mkdir -p build
+	cat src/before.html > build/index.html
+	cat temp/main.js >> build/index.html
+	cat src/after.html >> build/index.html
 	rm -rf retail
 	mkdir -p retail
 	terser --compress unsafe_arrows=true,unsafe=true,toplevel=true,passes=8 --mangle --mangle-props --toplevel --ecma 6 -O ascii_only=true -- temp/main.js > temp/main.min.js
