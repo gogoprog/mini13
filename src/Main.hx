@@ -74,24 +74,11 @@ class Main {
         }
         var program;
         {
-            var src = "#version 300 es
-            void main() {
-                float angle = float(gl_VertexID) * 3.1415 * 0.1;
-                float radius = 0.9;
-                vec2 pos = vec2(cos(angle), sin(angle)) * radius;
-                gl_Position = vec4(pos, 0.0, 1.0);
-                gl_PointSize = 3.0;
-            }";
+            var src = Macros.getFileContent("src/fs.glsl");
             var vs = createShader(vertexShader());
             shaderSource(vs, src);
             compileShader(vs);
-            var src = "#version 300 es
-                      precision highp float;
-            out vec4 outColor;
-            void main() {
-                outColor = vec4(1, 0, 0, 1);
-            }
-            ";
+            var src = Macros.getFileContent("src/vs.glsl");
             var fs = createShader(fragmentShader());
             shaderSource(fs, src);
             compileShader(fs);
