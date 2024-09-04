@@ -1,6 +1,7 @@
 @:native("")
 extern class Shim {
     @:native("c") static var canvas:js.html.CanvasElement;
+    @:native("g") static var g:Dynamic;
 }
 
 abstract Point(Array<Float>) from Array<Float> to Array<Float> {
@@ -22,12 +23,57 @@ class Main {
         var walls:Array<Dynamic> = [];
         var camPos:Point = [screenSize, screenSize];
         var camAngle:Float = 0;
-        /* var keys:Dynamic = {}; */
-        var mx:Int = 0;
-        var mmove:Int = 0;
-        var textureCanvas:js.html.CanvasElement;
+        {
+            js.Syntax.code(" for(i in g=c.getContext(`webgl`)) { g[i[0]+i[6]]=g[i]; } "); // From Xem
+        }
+        inline function createProgram(...args) {
+            return Shim.g.cP(args);
+        }
+        inline function createShader(...args) {
+            return Shim.g.cS(args);
+        }
+        inline function shaderSource(...args) {
+            Shim.g.sS(args);
+        }
+        inline function compileShader(...args) {
+            Shim.g.compilerShader(args);
+        }
+        inline function attachShader(...args) {
+            Shim.g.aS(args);
+        }
+        inline function linkProgram(...args) {
+            Shim.g.lo(args);
+        }
+        inline function useProgram(...args) {
+            Shim.g.ug(args);
+        }
+        inline function fragmentShader() {
+            return Shim.g.FN;
+        }
+        inline function vertexShader() {
+            return Shim.g.V_;
+        }
+        {
+            var src = "attribute vec3 aVertexPosition;
+            void main(void) {
+                gl_Position = vec4(aVertexPosition, 1.0);
+            }";
+            var vs = createShader(vertexShader());
+            shaderSource(vs, src);
+            compileShader(vs);
+            var src="void main(void){gl_FragColor=vec4(1.0,1.0,1.0,1.0);}";
+            var fs = createShader(fragmentShader());
+            shaderSource(vs, src);
+            compileShader(vs);
+
+            var program = createProgram();
+            attachShader(program, vs);
+            attachShader(program, fs);
+            linkProgram(program);
+            useProgram(program);
+        }
         function loop(t:Float) {
-        trace("yep");
+            trace("yep");
             untyped setTimeout(loop, 1000);
         }
         loop(0);
