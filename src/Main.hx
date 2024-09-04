@@ -82,9 +82,20 @@ class Main {
         attachShader(program, fs);
         linkProgram(program);
         useProgram(program);
+        
+        // Enable depth testing
+        Shim.g.enable(Shim.g.DEPTH_TEST);
+        
+        // Disable culling (if you still want this)
+        Shim.g.disable(Shim.g.CULL_FACE);
+
         // Get the uniform location for time
         var timeUniformLocation = Shim.g.getUniformLocation(program, "uTime");
+        
         function loop(t:Float) {
+            // Clear color and depth buffer
+            Shim.g.clear(Shim.g.COLOR_BUFFER_BIT | Shim.g.DEPTH_BUFFER_BIT);
+            
             // Update time uniform
             Shim.g.uniform1f(timeUniformLocation, t);
             draw(36); // Change to 36 to draw all cube faces
