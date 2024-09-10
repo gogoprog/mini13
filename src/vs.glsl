@@ -2,6 +2,8 @@
 precision highp float;
 
 out vec3 vVertex;
+out vec3 vNormal; // Added output for normals
+
 const float aspect = 16.0 / 9.0;
 const float fov = radians(60.0);
 const float near = 0.1;
@@ -23,6 +25,17 @@ float random(float seed) {
 
 uniform float uTime;
 
+uniform vec3 uData[16];
+
+const vec3 cubeNormals[6] = vec3[6](
+    vec3(0.0, 0.0, -1.0), // Front face
+    vec3(1.0, 0.0, 0.0),  // Right face
+    vec3(0.0, 0.0, 1.0),  // Back face
+    vec3(-1.0, 0.0, 0.0), // Left face
+    vec3(0.0, 1.0, 0.0),  // Top face
+    vec3(0.0, -1.0, 0.0)  // Bottom face
+);
+
 mat4 computeProjectionMatrix() {
     float f = 1.0 / tan(fov * 0.5);
     float rangeInv = 1.0 / (near - far);
@@ -41,7 +54,9 @@ mat4 computeViewMatrix() {
 }
 
 void main() {
-    int vertexIndex = cubeIndices[gl_VertexID];
+    int cubeIndex = int(gl_VertexID / 36);
+    int faceIndex = int((gl_VertexID % 36) / 6);
+    int vertexIndex = cubeIndices[gl_VertexID % 36];
     vec3 position = cubeVertices[vertexIndex];
 
     float angle = uTime * 0.001;
@@ -49,12 +64,11 @@ void main() {
 
     vVertex = position;
 
-    position = rotationMatrix * position;
+    position = rotationMatrix * position + uData[cubeIndex];
 
     mat4 projection = computeProjectionMatrix();
     mat4 view = computeViewMatrix();
     gl_Position = projection * view * vec4(position, 1.0);
 
-    int faceIndex = int((gl_VertexID % 36) / 6);
-
+    vNormal = rotationMatrix * cubeNormals[faceIndex];
 }

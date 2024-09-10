@@ -85,10 +85,20 @@ class Main {
         Shim.g.enable(Shim.g.DEPTH_TEST);
         Shim.g.disable(Shim.g.CULL_FACE);
         var timeUniformLocation = Shim.g.getUniformLocation(program, "uTime");
+        var dataLoc = Shim.g.getUniformLocation(program, "uData");
+        var data = new js.lib.Float32Array(16 * 3);
+
+        for(i in 0...16) {
+            data[i * 3 + 0] = Std.int(Math.random() * 20) - 10;
+            data[i * 3 + 1] = Std.int(Math.random() * 2);
+            data[i * 3 + 2] = Std.int(Math.random() * 2);
+        }
+
+        Shim.g.uniform3fv(dataLoc, data);
         function loop(t:Float) {
             Shim.g.clear(Shim.g.COLOR_BUFFER_BIT | Shim.g.DEPTH_BUFFER_BIT);
             Shim.g.uniform1f(timeUniformLocation, t);
-            draw(36);
+            draw(36 * 16);
             js.Browser.window.requestAnimationFrame(loop);
         }
         js.Browser.window.requestAnimationFrame(loop);
