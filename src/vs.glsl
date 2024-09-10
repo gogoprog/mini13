@@ -1,16 +1,12 @@
 #version 300 es
-
 precision highp float;
 
-// Change the output to a simple vec4
-out vec4 vColor;
-
+out vec3 vVertex;
 const float aspect = 16.0 / 9.0;
 const float fov = radians(60.0);
 const float near = 0.1;
 const float far = 100.0;
-
-const vec3 cameraPosition = vec3(0.0, 0.0, 5.0);
+const vec3 cameraPosition = vec3(0.0, 1.0, 5.0);
 const vec3 cameraTarget = vec3(0.0, 0.0, 0.0);
 const vec3 cameraUp = vec3(0.0, 1.0, 0.0);
 
@@ -18,20 +14,13 @@ const vec3 cubeVertices[8] =
     vec3[8](vec3(-0.5, -0.5, -0.5), vec3(0.5, -0.5, -0.5), vec3(0.5, 0.5, -0.5), vec3(-0.5, 0.5, -0.5),
             vec3(-0.5, -0.5, 0.5), vec3(0.5, -0.5, 0.5), vec3(0.5, 0.5, 0.5), vec3(-0.5, 0.5, 0.5));
 
-const int cubeIndices[36] = int[36](0, 1, 2, 2, 3, 0,
-                                    1, 5, 6, 6, 2, 1,
-                                    5, 4, 7, 7, 6, 5,
-                                    4, 0, 3, 3, 7, 4,
-                                    3, 2, 6, 6, 7, 3,
-                                    4, 5, 1, 1, 0, 4
-);
+const int cubeIndices[36] =
+    int[36](0, 1, 2, 2, 3, 0, 1, 5, 6, 6, 2, 1, 5, 4, 7, 7, 6, 5, 4, 0, 3, 3, 7, 4, 3, 2, 6, 6, 7, 3, 4, 5, 1, 1, 0, 4);
 
-// Add this function to generate a pseudo-random value
 float random(float seed) {
     return fract(sin(seed) * 43758.5453);
 }
 
-// Add time uniform
 uniform float uTime;
 
 mat4 computeProjectionMatrix() {
@@ -55,24 +44,17 @@ void main() {
     int vertexIndex = cubeIndices[gl_VertexID];
     vec3 position = cubeVertices[vertexIndex];
 
-    // Add rotation matrix
-    float angle = uTime * 0.001; // Adjust rotation speed
-    mat3 rotationMatrix = mat3(
-        cos(angle), 0.0, sin(angle),
-        0.0, 1.0, 0.0,
-        -sin(angle), 0.0, cos(angle)
-    );
+    float angle = uTime * 0.001;
+    mat3 rotationMatrix = mat3(cos(angle), 0.0, sin(angle), 0.0, 1.0, 0.0, -sin(angle), 0.0, cos(angle));
 
-    // Apply rotation to position
+    vVertex = position;
+
     position = rotationMatrix * position;
 
     mat4 projection = computeProjectionMatrix();
     mat4 view = computeViewMatrix();
     gl_Position = projection * view * vec4(position, 1.0);
 
-    // Randomize the color using gl_VertexID
-    float r = random(float(gl_VertexID) * 0.1);
-    float g = random(float(gl_VertexID) * 0.2);
-    float b = random(float(gl_VertexID) * 0.3);
-    vColor = vec4(r, g, b, 1.0);
+    int faceIndex = int((gl_VertexID % 36) / 6);
+
 }
