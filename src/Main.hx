@@ -88,13 +88,20 @@ class Main {
         Shim.g.disable(Shim.g.CULL_FACE);
         var timeUniformLocation = Shim.g.getUniformLocation(program, "uTime");
         var dataLoc = Shim.g.getUniformLocation(program, "uData");
-        var numCubes = 10240;
+        var numCubes = 4096;
         var data = new js.lib.Float32Array(numCubes * 4);
+        var dataLen = 0;
+        inline function addCube(x, y, z) {
+            data[dataLen * 4 + 0] = x;
+            data[dataLen * 4 + 1] = y;
+            data[dataLen * 4 + 2] = z;
+            ++dataLen;
+        }
 
-        for(i in 0...numCubes) {
-            data[i * 4 + 0] = Math.random() * 40 - 20;
-            data[i * 4 + 1] = Math.random() * 10;
-            data[i * 4 + 2] = Math.random() * 40 - 20;
+        for(x in -16...16) {
+            for(z in -16...16) {
+                addCube(x, 0, z);
+            }
         }
 
         var ubo = Shim.g.createBuffer();
