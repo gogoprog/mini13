@@ -8,8 +8,7 @@ const float aspect = 16.0 / 9.0;
 const float fov = radians(60.0);
 const float near = 0.1;
 const float far = 100.0;
-const vec3 cameraPosition = vec3(0.0, 1.0, 5.0);
-const vec3 cameraTarget = vec3(0.0, 0.0, 0.0);
+// Removed: const vec3 cameraTarget = vec3(0.0, 0.0, 0.0);
 const vec3 cameraUp = vec3(0.0, 1.0, 0.0);
 
 const vec3 cubeVertices[8] =
@@ -24,16 +23,18 @@ float random(float seed) {
 }
 
 uniform float uTime;
-
 uniform vec3 uData[16];
+uniform vec3 uCameraPosition;
+uniform float uCameraYaw;   // Added: Camera yaw uniform
+uniform float uCameraPitch; // Added: Camera pitch uniform
 
 const vec3 cubeNormals[6] = vec3[6](
-    vec3(0.0, 0.0, -1.0), // Front face
-    vec3(1.0, 0.0, 0.0),  // Right face
-    vec3(0.0, 0.0, 1.0),  // Back face
-    vec3(-1.0, 0.0, 0.0), // Left face
-    vec3(0.0, 1.0, 0.0),  // Top face
-    vec3(0.0, -1.0, 0.0)  // Bottom face
+    vec3(0.0, 0.0, -1.0),
+    vec3(1.0, 0.0, 0.0),
+    vec3(0.0, 0.0, 1.0),
+    vec3(-1.0, 0.0, 0.0),
+    vec3(0.0, 1.0, 0.0),
+    vec3(0.0, -1.0, 0.0)
 );
 
 mat4 computeProjectionMatrix() {
@@ -45,11 +46,21 @@ mat4 computeProjectionMatrix() {
 }
 
 mat4 computeViewMatrix() {
-    vec3 zaxis = normalize(cameraPosition - cameraTarget);
+    vec3 cameraPosition = uCameraPosition;
+    
+    // Calculate camera direction based on yaw and pitch
+    vec3 cameraDirection;
+    cameraDirection.x = cos(uCameraPitch) * sin(uCameraYaw);
+    cameraDirection.y = sin(uCameraPitch);
+    cameraDirection.z = cos(uCameraPitch) * cos(uCameraYaw);
+    
+    vec3 zaxis = normalize(cameraDirection);
     vec3 xaxis = normalize(cross(cameraUp, zaxis));
     vec3 yaxis = cross(zaxis, xaxis);
 
-    return mat4(xaxis.x, yaxis.x, zaxis.x, 0.0, xaxis.y, yaxis.y, zaxis.y, 0.0, xaxis.z, yaxis.z, zaxis.z, 0.0,
+    return mat4(xaxis.x, yaxis.x, zaxis.x, 0.0,
+                xaxis.y, yaxis.y, zaxis.y, 0.0,
+                xaxis.z, yaxis.z, zaxis.z, 0.0,
                 -dot(xaxis, cameraPosition), -dot(yaxis, cameraPosition), -dot(zaxis, cameraPosition), 1.0);
 }
 
@@ -64,7 +75,8 @@ void main() {
 
     vVertex = position;
 
-    position = rotationMatrix * position + uData[cubeIndex];
+    position = position + uData[cubeIndex];
+    //position = rotationMatrix * position + uData[cubeIndex];
 
     mat4 projection = computeProjectionMatrix();
     mat4 view = computeViewMatrix();

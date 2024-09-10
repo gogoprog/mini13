@@ -2,6 +2,7 @@ default: build
 
 compile:
 	haxe build.hxml
+	cp temp/main.js temp/original.js
 	sed '1d' -i temp/main.js
 	sed '1d' -i temp/main.js
 	sed '1d' -i temp/main.js
