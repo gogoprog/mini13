@@ -91,12 +91,14 @@ class Main {
         Shim.g.disable(Shim.g.CULL_FACE);
         var timeUniformLocation = Shim.g.getUniformLocation(program, "uTime");
         var dataLoc = Shim.g.getUniformLocation(program, "uData");
-        var data = new js.lib.Float32Array(16 * 3);
+        var numCubes = 2000;
+        var data = new js.lib.Float32Array(numCubes * 3);
 
-        for(i in 0...16) {
+
+        for(i in 0...numCubes) {
             data[i * 3 + 0] = Std.int(Math.random() * 20) - 10;
-            data[i * 3 + 1] = Std.int(Math.random() * 2);
-            data[i * 3 + 2] = Std.int(Math.random() * 2);
+            data[i * 3 + 1] = Std.int(Math.random() * 5);
+            data[i * 3 + 2] = Std.int(Math.random() * 20) - 10;
         }
 
         Shim.g.uniform3fv(dataLoc, data);
@@ -110,42 +112,46 @@ class Main {
             Shim.g.clear(Shim.g.COLOR_BUFFER_BIT | Shim.g.DEPTH_BUFFER_BIT);
             Shim.g.uniform1f(timeUniformLocation, t);
             var moveSpeed = 0.4;
-            var rotateSpeed = 0.05;
+            var mouseSensitivity = 0.002;
+
+            // Calculate camera direction vector
+            var dirX = Math.cos(cameraPitch) * Math.sin(cameraYaw);
+            var dirY = Math.sin(cameraPitch);
+            var dirZ = Math.cos(cameraPitch) * Math.cos(cameraYaw);
+
+            // Calculate right vector
+            var rightX = Math.cos(cameraYaw);
+            var rightZ = -Math.sin(cameraYaw);
 
             // Handle movement
             if(getKey("w")) {
-                cameraPosition[0] += Math.sin(cameraYaw) * moveSpeed;
-                cameraPosition[2] -= Math.cos(cameraYaw) * moveSpeed;
+                cameraPosition[0] -= dirX * moveSpeed;
+                cameraPosition[1] -= dirY * moveSpeed;
+                cameraPosition[2] -= dirZ * moveSpeed;
             }
-
             if(getKey("s")) {
-                cameraPosition[0] -= Math.sin(cameraYaw) * moveSpeed;
-                cameraPosition[2] += Math.cos(cameraYaw) * moveSpeed;
+                cameraPosition[0] += dirX * moveSpeed;
+                cameraPosition[1] += dirY * moveSpeed;
+                cameraPosition[2] += dirZ * moveSpeed;
             }
-
             if(getKey("a")) {
-                cameraPosition[0] -= Math.cos(cameraYaw) * moveSpeed;
-                cameraPosition[2] -= Math.sin(cameraYaw) * moveSpeed;
+                cameraPosition[0] -= rightX * moveSpeed;
+                cameraPosition[2] -= rightZ * moveSpeed;
             }
-
             if(getKey("d")) {
-                cameraPosition[0] += Math.cos(cameraYaw) * moveSpeed;
-                cameraPosition[2] += Math.sin(cameraYaw) * moveSpeed;
+                cameraPosition[0] += rightX * moveSpeed;
+                cameraPosition[2] += rightZ * moveSpeed;
             }
 
-            // Handle rotation
-            if(getKey("ArrowLeft")) { cameraYaw -= rotateSpeed; }
-
-            if(getKey("ArrowRight")) { cameraYaw += rotateSpeed; }
-
-            if(getKey("ArrowUp")) { cameraPitch = Math.max(cameraPitch - rotateSpeed, -Math.PI / 2); }
-
-            if(getKey("ArrowDown")) { cameraPitch = Math.min(cameraPitch + rotateSpeed, Math.PI / 2); }
+            // Handle rotation using mouseMove
+            cameraYaw -= mouseMove[0] * mouseSensitivity;
+            cameraPitch += mouseMove[1] * mouseSensitivity;
+            cameraPitch = Math.max(Math.min(cameraPitch, Math.PI / 2), -Math.PI / 2);
 
             Shim.g.uniform3f(cameraPositionUniformLocation, cameraPosition[0], cameraPosition[1], cameraPosition[2]);
             Shim.g.uniform1f(cameraYawUniformLocation, cameraYaw);
             Shim.g.uniform1f(cameraPitchUniformLocation, cameraPitch);
-            draw(16 * 36);
+            draw(numCubes * 36);
 
             mouseMove[0] = mouseMove[1] = 0;
             js.Browser.window.requestAnimationFrame(loop);

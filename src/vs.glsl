@@ -23,7 +23,7 @@ float random(float seed) {
 }
 
 uniform float uTime;
-uniform vec3 uData[16];
+uniform vec3 uData[512];
 uniform vec3 uCameraPosition;
 uniform float uCameraYaw;   // Added: Camera yaw uniform
 uniform float uCameraPitch; // Added: Camera pitch uniform
@@ -82,5 +82,5 @@ void main() {
     mat4 view = computeViewMatrix();
     gl_Position = projection * view * vec4(position, 1.0);
 
-    vNormal = rotationMatrix * cubeNormals[faceIndex];
+    vNormal = cubeNormals[faceIndex];
 }

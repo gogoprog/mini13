@@ -5,8 +5,6 @@ in vec3 vVertex;
 in vec3 vNormal;
 out vec4 fragColor;
 
-uniform float uTime;
-
 void main() {
     vec3 lightDir = normalize(vec3(-0.1, 10.0, 1.0));
     vec3 ambient = vec3(0.2, 0.2, 0.2);
