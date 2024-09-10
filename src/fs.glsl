@@ -18,5 +18,4 @@ void main() {
         baseColor = brown;
     vec3 litColor = ambient + baseColor * diff * 0.7;
     fragColor = vec4(litColor, 1.0);
-    // fragColor = vec4(baseColor, 1.0);
 }

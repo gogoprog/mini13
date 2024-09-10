@@ -12,7 +12,7 @@ class Main {
         var time:Int = 0;
         var keys:Dynamic = {};
         var mouseMove = [0, 0];
-        js.Syntax.code(" for(i in g=c.getContext(`webgl2`)) { g[i[0]+i[6]]=g[i]; } "); // From Xem
+        js.Syntax.code(" for(i in g=c.getContext(`webgl2`)) { g[i[0]+i[6]]=g[i]; } ");
         inline function createProgram() {
             return Shim.g.cP();
         }
@@ -27,7 +27,6 @@ class Main {
 #if dev
 
             if(!Shim.g.getShaderParameter(a, Shim.g.COMPILE_STATUS)) {
-                // trace("An error occurred compiling the shaders: " + Shim.g.getShaderInfoLog(a));
                 trace("An error occurred compiling the shaders: ");
                 trace(Shim.g.getShaderInfoLog(a));
             }
@@ -42,7 +41,6 @@ class Main {
 #if dev
 
             if(!Shim.g.getProgramParameter(a, Shim.g.LINK_STATUS)) {
-                // trace("An error occurred compiling the shaders: " + Shim.g.getShaderInfoLog(a));
                 trace("An error occurred linking the program: ");
                 trace(Shim.g.getProgramInfoLog(a));
             }
@@ -69,7 +67,6 @@ class Main {
         untyped onkeydown = onkeyup = function(e) {
             keys[e.key] = e.type[3] == 'd';
         }
-        // Shim.canvas.oncontextmenu = e->false;
         inline function getKey(str:String) {
             return untyped keys[str];
         }
@@ -91,17 +88,22 @@ class Main {
         Shim.g.disable(Shim.g.CULL_FACE);
         var timeUniformLocation = Shim.g.getUniformLocation(program, "uTime");
         var dataLoc = Shim.g.getUniformLocation(program, "uData");
-        var numCubes = 2000;
-        var data = new js.lib.Float32Array(numCubes * 3);
-
+        var numCubes = 10240;
+        var data = new js.lib.Float32Array(numCubes * 4);
 
         for(i in 0...numCubes) {
-            data[i * 3 + 0] = Std.int(Math.random() * 20) - 10;
-            data[i * 3 + 1] = Std.int(Math.random() * 5);
-            data[i * 3 + 2] = Std.int(Math.random() * 20) - 10;
+            data[i * 4 + 0] = Math.random() * 40 - 20;
+            data[i * 4 + 1] = Math.random() * 10;
+            data[i * 4 + 2] = Math.random() * 40 - 20;
         }
 
-        Shim.g.uniform3fv(dataLoc, data);
+        var ubo = Shim.g.createBuffer();
+        Shim.g.bindBuffer(Shim.g.UNIFORM_BUFFER, ubo);
+        Shim.g.bufferData(Shim.g.UNIFORM_BUFFER, data, Shim.g.STATIC_DRAW);
+        Shim.g.bindBuffer(Shim.g.UNIFORM_BUFFER, null);
+        var uboIndex = Shim.g.getUniformBlockIndex(program, "CubeData");
+        Shim.g.uniformBlockBinding(program, uboIndex, 0);
+        Shim.g.bindBufferBase(Shim.g.UNIFORM_BUFFER, 0, ubo);
         var cameraPosition = [0.0, 1, 5];
         var cameraYaw = 0.0;
         var cameraPitch = 0.0;
@@ -113,46 +115,41 @@ class Main {
             Shim.g.uniform1f(timeUniformLocation, t);
             var moveSpeed = 0.4;
             var mouseSensitivity = 0.002;
-
-            // Calculate camera direction vector
             var dirX = Math.cos(cameraPitch) * Math.sin(cameraYaw);
             var dirY = Math.sin(cameraPitch);
             var dirZ = Math.cos(cameraPitch) * Math.cos(cameraYaw);
-
-            // Calculate right vector
             var rightX = Math.cos(cameraYaw);
             var rightZ = -Math.sin(cameraYaw);
 
-            // Handle movement
             if(getKey("w")) {
                 cameraPosition[0] -= dirX * moveSpeed;
                 cameraPosition[1] -= dirY * moveSpeed;
                 cameraPosition[2] -= dirZ * moveSpeed;
             }
+
             if(getKey("s")) {
                 cameraPosition[0] += dirX * moveSpeed;
                 cameraPosition[1] += dirY * moveSpeed;
                 cameraPosition[2] += dirZ * moveSpeed;
             }
+
             if(getKey("a")) {
                 cameraPosition[0] -= rightX * moveSpeed;
                 cameraPosition[2] -= rightZ * moveSpeed;
             }
+
             if(getKey("d")) {
                 cameraPosition[0] += rightX * moveSpeed;
                 cameraPosition[2] += rightZ * moveSpeed;
             }
 
-            // Handle rotation using mouseMove
             cameraYaw -= mouseMove[0] * mouseSensitivity;
             cameraPitch += mouseMove[1] * mouseSensitivity;
             cameraPitch = Math.max(Math.min(cameraPitch, Math.PI / 2), -Math.PI / 2);
-
             Shim.g.uniform3f(cameraPositionUniformLocation, cameraPosition[0], cameraPosition[1], cameraPosition[2]);
             Shim.g.uniform1f(cameraYawUniformLocation, cameraYaw);
             Shim.g.uniform1f(cameraPitchUniformLocation, cameraPitch);
             draw(numCubes * 36);
-
             mouseMove[0] = mouseMove[1] = 0;
             js.Browser.window.requestAnimationFrame(loop);
         }
