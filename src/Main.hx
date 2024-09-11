@@ -24,28 +24,12 @@ class Main {
         }
         inline function compileShader(a) {
             Shim.g.compileShader(a);
-#if dev
-
-            if(!Shim.g.getShaderParameter(a, Shim.g.COMPILE_STATUS)) {
-                trace("An error occurred compiling the shaders: ");
-                trace(Shim.g.getShaderInfoLog(a));
-            }
-
-#end
         }
         inline function attachShader(a, b) {
             Shim.g.aS(a, b);
         }
         inline function linkProgram(a) {
             Shim.g.lo(a);
-#if dev
-
-            if(!Shim.g.getProgramParameter(a, Shim.g.LINK_STATUS)) {
-                trace("An error occurred linking the program: ");
-                trace(Shim.g.getProgramInfoLog(a));
-            }
-
-#end
         }
         inline function useProgram(a) {
             Shim.g.ug(a);
@@ -131,17 +115,27 @@ class Main {
         var deceleration = 10.0;
         var maxSpeed = 4.0;
         var lastShotTime = 0.0;
-        var shotCooldown = 0.5; // 0.5 seconds between shots
+        var shotCooldown = 0.5;
         var bulletSpeed = 50.0;
         var bulletRange = 20.0;
         var bulletSpread = 0.1;
         var bulletsPerShot = 8;
         var resolutionUniformLocation = Shim.g.getUniformLocation(program, "uResolution");
+        function normalizeVector(v:Array<Float>):Array<Float> {
+            var length = Math.sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
+            return [v[0]/length, v[1]/length, v[2]/length];
+        }
+        function addVectors(v1:Array<Float>, v2:Array<Float>):Array<Float> {
+            return [v1[0] + v2[0], v1[1] + v2[1], v1[2] + v2[2]];
+        }
+        function multiplyVector(v:Array<Float>, scalar:Float):Array<Float> {
+            return [v[0] * scalar, v[1] * scalar, v[2] * scalar];
+        }
         function checkCollision(x:Float, y:Float, z:Float):Bool {
             var ix = Math.floor(x);
             var iy = Math.floor(y);
             var iz = Math.floor(z);
-            var playerRadius = 0.4; // Adjust this value as needed
+            var playerRadius = 0.4;
 
             for(dx in -1...2) {
                 for(dy in -1...2) {
@@ -158,7 +152,6 @@ class Main {
                                 var cubeZ = (cubeData >> 16) & 0xFF;
 
                                 if(cubeX == cx && cubeY == cy && cubeZ == cz) {
-                                    // Sphere-cube collision check
                                     var dx = Math.max(Math.abs(x - cubeX) - 0.5, 0);
                                     var dy = Math.max(Math.abs(y - cubeY) - 0.5, 0);
                                     var dz = Math.max(Math.abs(z - cubeZ) - 0.5, 0);
@@ -176,8 +169,7 @@ class Main {
 
             return false;
         }
-        function shootShotgun() {
-            var currentTime = haxe.Timer.stamp();
+        function shootShotgun(currentTime:Float) {
 
             if(currentTime - lastShotTime < shotCooldown) { return; }
 
@@ -194,26 +186,21 @@ class Main {
                 var start = [cameraPosition[0], cameraPosition[1], cameraPosition[2]];
                 var end = addVectors(start, multiplyVector(dir, bulletRange));
 
-                // Perform raycast and handle hits
                 for(j in 0...Std.int(bulletRange)) {
                     var point = addVectors(start, multiplyVector(dir, j));
 
                     if(checkCollision(point[0], point[1], point[2])) {
-                        // Hit a block, you can add destruction logic here
                         trace('Hit block at ${point[0]}, ${point[1]}, ${point[2]}');
                         break;
                     }
                 }
             }
-
-            // Add muzzle flash or sound effect here
         }
         function loop(t:Float) {
             Shim.g.clear(Shim.g.COLOR_BUFFER_BIT | Shim.g.DEPTH_BUFFER_BIT);
             Shim.g.uniform1f(timeUniformLocation, t);
             var moveSpeed = 0.4;
             var mouseSensitivity = 0.002;
-            // Update camera yaw and pitch based on mouse movement
             cameraYaw -= mouseMove[0] * mouseSensitivity;
             cameraPitch += mouseMove[1] * mouseSensitivity;
             cameraPitch = Math.max(Math.min(cameraPitch, Math.PI / 2), -Math.PI / 2);
@@ -222,13 +209,11 @@ class Main {
             var dirZ = Math.cos(cameraPitch) * Math.cos(cameraYaw);
             var rightX = Math.cos(cameraYaw);
             var rightZ = -Math.sin(cameraYaw);
-            var deltaTime = 1 / 60; // Assuming 60 FPS
-            // Reset acceleration
+            var deltaTime = 1 / 60;
             playerAcceleration[0] = 0;
             playerAcceleration[2] = 0;
             var previous_y = playerPosition[1];
 
-            // Apply input-based acceleration
             if(getKey("w")) {
                 playerAcceleration[0] -= dirX * acceleration;
                 playerAcceleration[2] -= dirZ * acceleration;
@@ -249,11 +234,9 @@ class Main {
                 playerAcceleration[2] += rightZ * acceleration;
             }
 
-            // Apply acceleration to velocity
             playerVelocity[0] += playerAcceleration[0] * deltaTime;
             playerVelocity[2] += playerAcceleration[2] * deltaTime;
 
-            // Apply deceleration when no input
             if(playerAcceleration[0] == 0) {
                 playerVelocity[0] *= Math.pow(1 - deceleration * deltaTime, 2);
             }
@@ -262,7 +245,6 @@ class Main {
                 playerVelocity[2] *= Math.pow(1 - deceleration * deltaTime, 2);
             }
 
-            // Limit speed
             var speed = Math.sqrt(playerVelocity[0] * playerVelocity[0] + playerVelocity[2] * playerVelocity[2]);
 
             if(speed > maxSpeed) {
@@ -270,26 +252,21 @@ class Main {
                 playerVelocity[2] *= maxSpeed / speed;
             }
 
-            // Apply gravity
             playerVelocity[1] += gravity * deltaTime;
 
-            // Handle jump
             if(isOnGround && getKey(" ")) {
                 playerVelocity[1] = jumpVelocity;
                 isOnGround = false;
             }
 
-            // Update player position
             var newX = playerPosition[0] + playerVelocity[0] * deltaTime;
             var newY = playerPosition[1] + playerVelocity[1] * deltaTime;
             var newZ = playerPosition[2] + playerVelocity[2] * deltaTime;
 
-            // Check for collisions and update position
             if(!checkCollision(newX, playerPosition[1], playerPosition[2])) {
                 playerPosition[0] = newX;
             } else {
                 playerVelocity[0] = 0;
-                // Push the player out of the collision
                 var pushDirection = newX > playerPosition[0] ? -1 : 1;
                 playerPosition[0] += pushDirection * 0.01;
             }
@@ -303,9 +280,7 @@ class Main {
                 }
 
                 playerVelocity[1] = 0;
-                // Push the player out of the collision
                 var pushDirection = newY > playerPosition[1] ? -1 : 1;
-                // playerPosition[1] += pushDirection * 0.01;
                 playerPosition[1] = previous_y;
             }
 
@@ -313,24 +288,20 @@ class Main {
                 playerPosition[2] = newZ;
             } else {
                 playerVelocity[2] = 0;
-                // Push the player out of the collision
                 var pushDirection = newZ > playerPosition[2] ? -1 : 1;
                 playerPosition[2] += pushDirection * 0.01;
             }
 
-            // Update camera position to match player position
             cameraPosition[0] = playerPosition[0];
-            cameraPosition[1] = playerPosition[1] + 0.2; // Eye level
+            cameraPosition[1] = playerPosition[1] + 0.2;
             cameraPosition[2] = playerPosition[2];
-            // Update uniform values for camera
             Shim.g.uniform3f(cameraPositionUniformLocation, cameraPosition[0], cameraPosition[1], cameraPosition[2]);
             Shim.g.uniform1f(cameraYawUniformLocation, cameraYaw);
             Shim.g.uniform1f(cameraPitchUniformLocation, cameraPitch);
             Shim.g.uniform2f(resolutionUniformLocation, Shim.canvas.width, Shim.canvas.height);
 
-            // Handle shotgun shooting
             if(getKey("x")) {
-                shootShotgun();
+                shootShotgun(t);
             }
 
             draw(numCubes * 36);
@@ -338,19 +309,6 @@ class Main {
             js.Browser.window.requestAnimationFrame(loop);
         }
         js.Browser.window.requestAnimationFrame(loop);
-    }
-    // Add these static functions instead
-    static function normalizeVector(v:Array<Float>):Array<Float> {
-        var length = Math.sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
-        return [v[0]/length, v[1]/length, v[2]/length];
-    }
-
-    static function addVectors(v1:Array<Float>, v2:Array<Float>):Array<Float> {
-        return [v1[0] + v2[0], v1[1] + v2[1], v1[2] + v2[2]];
-    }
-
-    static function multiplyVector(v:Array<Float>, scalar:Float):Array<Float> {
-        return [v[0] * scalar, v[1] * scalar, v[2] * scalar];
     }
 
 }

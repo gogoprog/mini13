@@ -9,7 +9,6 @@ uniform vec2 uResolution;
 uniform float uTime;
 
 void main() {
-    // Existing lighting code
     vec3 lightDir = normalize(vec3(1.0, 2.0, 1.0));
     vec3 ambient = vec3(0.3, 0.3, 0.3);
     vec3 green = vec3(0.1, 0.8, 0.1);
@@ -24,7 +23,6 @@ void main() {
 
     vec3 litColor = ambient + baseColor * (diff * 0.6 + 0.4);
 
-    // Add crosshair
     vec2 uv = gl_FragCoord.xy / uResolution;
     vec2 center = vec2(0.5, 0.5);
     float crosshairSize = 0.01;
