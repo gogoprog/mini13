@@ -92,7 +92,6 @@ class Main {
         var data = new js.lib.Uint32Array(numCubes);
         var dataLen = 0;
         inline function addCube(x:Int, y:Int, z:Int) {
-            trace('adding cube for $x, $z');
             data[dataLen] = x | (y << 8) | (z << 16);
             ++dataLen;
         }
