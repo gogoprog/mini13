@@ -135,13 +135,11 @@ class Main {
             var ix = Math.floor(x);
             var iy = Math.floor(y);
             var iz = Math.floor(z);
+            var playerRadius = 0.4; // Adjust this value as needed
 
-            // for(dx in -1...2) {
-            //     for(dy in -1...2) {
-            //         for(dz in -1...2) {
-            var dx = 0;
-            var dy = 0;
-            var dz = 0;
+            for(dx in -1...2) {
+                for(dy in -1...2) {
+                    for(dz in -1...2) {
                         var cx = ix + dx;
                         var cy = iy + dy;
                         var cz = iz + dz;
@@ -154,13 +152,21 @@ class Main {
                                 var cubeZ = (cubeData >> 16) & 0xFF;
 
                                 if(cubeX == cx && cubeY == cy && cubeZ == cz) {
-                                    return true;
+                                    // Sphere-cube collision check
+                                    var dx = Math.max(Math.abs(x - cubeX) - 0.5, 0);
+                                    var dy = Math.max(Math.abs(y - cubeY) - 0.5, 0);
+                                    var dz = Math.max(Math.abs(z - cubeZ) - 0.5, 0);
+                                    var distance = Math.sqrt(dx*dx + dy*dy + dz*dz);
+                                    
+                                    if(distance < playerRadius) {
+                                        return true;
+                                    }
                                 }
                             }
                         }
-                    // }
-                // }
-            // }
+                    }
+                }
+            }
 
             return false;
         }
@@ -240,6 +246,9 @@ class Main {
                 playerPosition[0] = newX;
             } else {
                 playerVelocity[0] = 0;
+                // Push the player out of the collision
+                var pushDirection = newX > playerPosition[0] ? -1 : 1;
+                playerPosition[0] += pushDirection * 0.01;
             }
 
             if(!checkCollision(playerPosition[0], newY, playerPosition[2])) {
@@ -249,14 +258,19 @@ class Main {
                 if(playerVelocity[1] < 0) {
                     isOnGround = true;
                 }
-
                 playerVelocity[1] = 0;
+                // Push the player out of the collision
+                var pushDirection = newY > playerPosition[1] ? -1 : 1;
+                playerPosition[1] += pushDirection * 0.01;
             }
 
             if(!checkCollision(playerPosition[0], playerPosition[1], newZ)) {
                 playerPosition[2] = newZ;
             } else {
                 playerVelocity[2] = 0;
+                // Push the player out of the collision
+                var pushDirection = newZ > playerPosition[2] ? -1 : 1;
+                playerPosition[2] += pushDirection * 0.01;
             }
 
             // Update camera position to match player position
