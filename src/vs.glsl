@@ -86,7 +86,7 @@ void main() {
     vNormal = cubeNormals[faceIndex];
 
     // Particle rendering for shotgun blast
-    if (gl_VertexID >= 36 * 4096) {
+    if (false && gl_VertexID >= 36 * 4096) {
         int particleIndex = gl_VertexID - 36 * 4096;
         float t = float(particleIndex) / 100.0; // Adjust for desired particle count
 

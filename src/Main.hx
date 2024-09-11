@@ -79,7 +79,7 @@ class Main {
             data[dataLen] = x | (y << 8) | (z << 16);
             ++dataLen;
         }
-        var size = 100;
+        var size = 90;
 
         for(x in 0...size) {
             for(z in 0...size) {
@@ -87,10 +87,12 @@ class Main {
                 var h = Std.int(Math.random() * 3);
 
                 for(y in 1...h) {
-                    addCube(x, y, z);
+                    // addCube(x, y, z);
                 }
             }
         }
+
+        trace(dataLen);
 
         var ubo = Shim.g.createBuffer();
         Shim.g.bindBuffer(Shim.g.UNIFORM_BUFFER, ubo);
@@ -301,7 +303,8 @@ class Main {
             Shim.g.uniform2f(resolutionUniformLocation, Shim.canvas.width, Shim.canvas.height);
 
             if(getKey("x")) {
-                shootShotgun(t);
+                // shootShotgun(t);
+                trace(playerPosition);
             }
 
             draw(numCubes * 36);
