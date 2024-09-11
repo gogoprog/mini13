@@ -130,6 +130,13 @@ class Main {
         var acceleration = 20.0;
         var deceleration = 10.0;
         var maxSpeed = 4.0;
+        var lastShotTime = 0.0;
+        var shotCooldown = 0.5; // 0.5 seconds between shots
+        var bulletSpeed = 50.0;
+        var bulletRange = 20.0;
+        var bulletSpread = 0.1;
+        var bulletsPerShot = 8;
+        var resolutionUniformLocation = Shim.g.getUniformLocation(program, "uResolution");
         function checkCollision(x:Float, y:Float, z:Float):Bool {
             var ix = Math.floor(x);
             var iy = Math.floor(y);
@@ -156,7 +163,7 @@ class Main {
                                     var dy = Math.max(Math.abs(y - cubeY) - 0.5, 0);
                                     var dz = Math.max(Math.abs(z - cubeZ) - 0.5, 0);
                                     var distance = Math.sqrt(dx*dx + dy*dy + dz*dz);
-                                    
+
                                     if(distance < playerRadius) {
                                         return true;
                                     }
@@ -168,6 +175,38 @@ class Main {
             }
 
             return false;
+        }
+        function shootShotgun() {
+            var currentTime = haxe.Timer.stamp();
+
+            if(currentTime - lastShotTime < shotCooldown) { return; }
+
+            lastShotTime = currentTime;
+
+            for(i in 0...bulletsPerShot) {
+                var spreadX = (Math.random() - 0.5) * bulletSpread;
+                var spreadY = (Math.random() - 0.5) * bulletSpread;
+                var spreadZ = (Math.random() - 0.5) * bulletSpread;
+                var dirX = Math.cos(cameraPitch) * Math.sin(cameraYaw) + spreadX;
+                var dirY = Math.sin(cameraPitch) + spreadY;
+                var dirZ = Math.cos(cameraPitch) * Math.cos(cameraYaw) + spreadZ;
+                var dir = normalizeVector([dirX, dirY, dirZ]);
+                var start = [cameraPosition[0], cameraPosition[1], cameraPosition[2]];
+                var end = addVectors(start, multiplyVector(dir, bulletRange));
+
+                // Perform raycast and handle hits
+                for(j in 0...Std.int(bulletRange)) {
+                    var point = addVectors(start, multiplyVector(dir, j));
+
+                    if(checkCollision(point[0], point[1], point[2])) {
+                        // Hit a block, you can add destruction logic here
+                        trace('Hit block at ${point[0]}, ${point[1]}, ${point[2]}');
+                        break;
+                    }
+                }
+            }
+
+            // Add muzzle flash or sound effect here
         }
         function loop(t:Float) {
             Shim.g.clear(Shim.g.COLOR_BUFFER_BIT | Shim.g.DEPTH_BUFFER_BIT);
@@ -184,7 +223,6 @@ class Main {
             var rightX = Math.cos(cameraYaw);
             var rightZ = -Math.sin(cameraYaw);
             var deltaTime = 1 / 60; // Assuming 60 FPS
-
             // Reset acceleration
             playerAcceleration[0] = 0;
             playerAcceleration[2] = 0;
@@ -195,14 +233,17 @@ class Main {
                 playerAcceleration[0] -= dirX * acceleration;
                 playerAcceleration[2] -= dirZ * acceleration;
             }
+
             if(getKey("s")) {
                 playerAcceleration[0] += dirX * acceleration;
                 playerAcceleration[2] += dirZ * acceleration;
             }
+
             if(getKey("a")) {
                 playerAcceleration[0] -= rightX * acceleration;
                 playerAcceleration[2] -= rightZ * acceleration;
             }
+
             if(getKey("d")) {
                 playerAcceleration[0] += rightX * acceleration;
                 playerAcceleration[2] += rightZ * acceleration;
@@ -213,16 +254,18 @@ class Main {
             playerVelocity[2] += playerAcceleration[2] * deltaTime;
 
             // Apply deceleration when no input
-            if (playerAcceleration[0] == 0) {
+            if(playerAcceleration[0] == 0) {
                 playerVelocity[0] *= Math.pow(1 - deceleration * deltaTime, 2);
             }
-            if (playerAcceleration[2] == 0) {
+
+            if(playerAcceleration[2] == 0) {
                 playerVelocity[2] *= Math.pow(1 - deceleration * deltaTime, 2);
             }
 
             // Limit speed
             var speed = Math.sqrt(playerVelocity[0] * playerVelocity[0] + playerVelocity[2] * playerVelocity[2]);
-            if (speed > maxSpeed) {
+
+            if(speed > maxSpeed) {
                 playerVelocity[0] *= maxSpeed / speed;
                 playerVelocity[2] *= maxSpeed / speed;
             }
@@ -258,6 +301,7 @@ class Main {
                 if(playerVelocity[1] < 0) {
                     isOnGround = true;
                 }
+
                 playerVelocity[1] = 0;
                 // Push the player out of the collision
                 var pushDirection = newY > playerPosition[1] ? -1 : 1;
@@ -282,10 +326,31 @@ class Main {
             Shim.g.uniform3f(cameraPositionUniformLocation, cameraPosition[0], cameraPosition[1], cameraPosition[2]);
             Shim.g.uniform1f(cameraYawUniformLocation, cameraYaw);
             Shim.g.uniform1f(cameraPitchUniformLocation, cameraPitch);
+            Shim.g.uniform2f(resolutionUniformLocation, Shim.canvas.width, Shim.canvas.height);
+
+            // Handle shotgun shooting
+            if(getKey("x")) {
+                shootShotgun();
+            }
+
             draw(numCubes * 36);
             mouseMove[0] = mouseMove[1] = 0;
             js.Browser.window.requestAnimationFrame(loop);
         }
         js.Browser.window.requestAnimationFrame(loop);
     }
+    // Add these static functions instead
+    static function normalizeVector(v:Array<Float>):Array<Float> {
+        var length = Math.sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
+        return [v[0]/length, v[1]/length, v[2]/length];
+    }
+
+    static function addVectors(v1:Array<Float>, v2:Array<Float>):Array<Float> {
+        return [v1[0] + v2[0], v1[1] + v2[1], v1[2] + v2[2]];
+    }
+
+    static function multiplyVector(v:Array<Float>, scalar:Float):Array<Float> {
+        return [v[0] * scalar, v[1] * scalar, v[2] * scalar];
+    }
+
 }
