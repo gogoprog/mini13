@@ -124,17 +124,24 @@ class Main {
         var cameraPitchUniformLocation = Shim.g.getUniformLocation(program, "uCameraPitch");
         var playerPosition = [size/2, 10.0, size/2];
         var playerVelocity = [0.0, 0.0, 0.0];
+        var playerAcceleration = [0.0, 0.0, 0.0];
         var gravity = -9.8;
         var jumpVelocity = 5.0;
         var isOnGround = false;
+        var acceleration = 20.0;
+        var deceleration = 10.0;
+        var maxSpeed = 4.0;
         function checkCollision(x:Float, y:Float, z:Float):Bool {
             var ix = Math.floor(x);
             var iy = Math.floor(y);
             var iz = Math.floor(z);
 
-            for(dx in -1...2) {
-                for(dy in -1...2) {
-                    for(dz in -1...2) {
+            // for(dx in -1...2) {
+            //     for(dy in -1...2) {
+            //         for(dz in -1...2) {
+            var dx = 0;
+            var dy = 0;
+            var dz = 0;
                         var cx = ix + dx;
                         var cy = iy + dy;
                         var cz = iz + dz;
@@ -151,9 +158,9 @@ class Main {
                                 }
                             }
                         }
-                    }
-                }
-            }
+                    // }
+                // }
+            // }
 
             return false;
         }
@@ -172,6 +179,48 @@ class Main {
             var rightX = Math.cos(cameraYaw);
             var rightZ = -Math.sin(cameraYaw);
             var deltaTime = 1 / 60; // Assuming 60 FPS
+
+            // Reset acceleration
+            playerAcceleration[0] = 0;
+            playerAcceleration[2] = 0;
+
+            // Apply input-based acceleration
+            if(getKey("w")) {
+                playerAcceleration[0] -= dirX * acceleration;
+                playerAcceleration[2] -= dirZ * acceleration;
+            }
+            if(getKey("s")) {
+                playerAcceleration[0] += dirX * acceleration;
+                playerAcceleration[2] += dirZ * acceleration;
+            }
+            if(getKey("a")) {
+                playerAcceleration[0] -= rightX * acceleration;
+                playerAcceleration[2] -= rightZ * acceleration;
+            }
+            if(getKey("d")) {
+                playerAcceleration[0] += rightX * acceleration;
+                playerAcceleration[2] += rightZ * acceleration;
+            }
+
+            // Apply acceleration to velocity
+            playerVelocity[0] += playerAcceleration[0] * deltaTime;
+            playerVelocity[2] += playerAcceleration[2] * deltaTime;
+
+            // Apply deceleration when no input
+            if (playerAcceleration[0] == 0) {
+                playerVelocity[0] *= Math.pow(1 - deceleration * deltaTime, 2);
+            }
+            if (playerAcceleration[2] == 0) {
+                playerVelocity[2] *= Math.pow(1 - deceleration * deltaTime, 2);
+            }
+
+            // Limit speed
+            var speed = Math.sqrt(playerVelocity[0] * playerVelocity[0] + playerVelocity[2] * playerVelocity[2]);
+            if (speed > maxSpeed) {
+                playerVelocity[0] *= maxSpeed / speed;
+                playerVelocity[2] *= maxSpeed / speed;
+            }
+
             // Apply gravity
             playerVelocity[1] += gravity * deltaTime;
 
@@ -212,33 +261,8 @@ class Main {
 
             // Update camera position to match player position
             cameraPosition[0] = playerPosition[0];
-            cameraPosition[1] = playerPosition[1] - 0.8; // Eye level
+            cameraPosition[1] = playerPosition[1] + 0.2; // Eye level
             cameraPosition[2] = playerPosition[2];
-            // Update player velocity based on input
-            var moveSpeed = 4.0;
-            playerVelocity[0] = 0;
-            playerVelocity[2] = 0;
-
-            if(getKey("w")) {
-                playerVelocity[0] -= dirX * moveSpeed;
-                playerVelocity[2] -= dirZ * moveSpeed;
-            }
-
-            if(getKey("s")) {
-                playerVelocity[0] += dirX * moveSpeed;
-                playerVelocity[2] += dirZ * moveSpeed;
-            }
-
-            if(getKey("a")) {
-                playerVelocity[0] -= rightX * moveSpeed;
-                playerVelocity[2] -= rightZ * moveSpeed;
-            }
-
-            if(getKey("d")) {
-                playerVelocity[0] += rightX * moveSpeed;
-                playerVelocity[2] += rightZ * moveSpeed;
-            }
-
             // Update uniform values for camera
             Shim.g.uniform3f(cameraPositionUniformLocation, cameraPosition[0], cameraPosition[1], cameraPosition[2]);
             Shim.g.uniform1f(cameraYawUniformLocation, cameraYaw);
