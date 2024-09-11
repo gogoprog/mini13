@@ -22,7 +22,7 @@ float random(float seed) {
 }
 
 layout(std140) uniform CubeData {
-    vec4 uData[4096];
+    ivec4 uData[4096];
 };
 
 uniform float uTime;
@@ -68,7 +68,12 @@ void main() {
 
     vVertex = position;
 
-    position = position + uData[cubeIndex].xyz;
+    int value = int(uData[int(cubeIndex / 4)][cubeIndex % 4]);
+    float x = float(value & 255);
+    float y = float((value >> 8) & 255);
+    float z = float((value >> 16) & 255);
+
+    position = position + vec3(x, y, z);
 
     mat4 projection = computeProjectionMatrix();
     mat4 view = computeViewMatrix();

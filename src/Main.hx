@@ -88,19 +88,22 @@ class Main {
         Shim.g.disable(Shim.g.CULL_FACE);
         var timeUniformLocation = Shim.g.getUniformLocation(program, "uTime");
         var dataLoc = Shim.g.getUniformLocation(program, "uData");
-        var numCubes = 4096;
-        var data = new js.lib.Float32Array(numCubes * 4);
+        var numCubes = 4096 * 4;
+        var data = new js.lib.Uint32Array(numCubes);
         var dataLen = 0;
         inline function addCube(x, y, z) {
-            data[dataLen * 4 + 0] = x;
-            data[dataLen * 4 + 1] = y;
-            data[dataLen * 4 + 2] = z;
+            data[dataLen] = x | (y << 8) | (z << 16);
             ++dataLen;
         }
-
-        for(x in -16...16) {
-            for(z in -16...16) {
+        var size = 16;
+        for(x in -size...size) {
+            for(z in -size...size) {
                 addCube(x, 0, z);
+                var h = Std.int(Math.random()* 5);
+
+                for(y in 1...h) {
+                    addCube(x, y, z);
+                }
             }
         }
 
