@@ -189,6 +189,7 @@ class Main {
             // Reset acceleration
             playerAcceleration[0] = 0;
             playerAcceleration[2] = 0;
+            var previous_y = playerPosition[1];
 
             // Apply input-based acceleration
             if(getKey("w")) {
@@ -261,7 +262,8 @@ class Main {
                 playerVelocity[1] = 0;
                 // Push the player out of the collision
                 var pushDirection = newY > playerPosition[1] ? -1 : 1;
-                playerPosition[1] += pushDirection * 0.01;
+                // playerPosition[1] += pushDirection * 0.01;
+                playerPosition[1] = previous_y;
             }
 
             if(!checkCollision(playerPosition[0], playerPosition[1], newZ)) {
