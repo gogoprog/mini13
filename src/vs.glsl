@@ -7,7 +7,7 @@ out vec3 vNormal;
 const float aspect = 16.0 / 9.0;
 const float fov = radians(60.0);
 const float near = 0.1;
-const float far = 100.0;
+const float far = 1000.0;
 const vec3 cameraUp = vec3(0.0, 1.0, 0.0);
 
 const vec3 cubeVertices[8] =
