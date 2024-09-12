@@ -105,6 +105,9 @@ class Main {
         var cameraPositionUniformLocation = Shim.g.getUniformLocation(program, "uCameraPosition");
         var cameraYawUniformLocation = Shim.g.getUniformLocation(program, "uCameraYaw");
         var cameraPitchUniformLocation = Shim.g.getUniformLocation(program, "uCameraPitch");
+        var globalYawUniformLocation = Shim.g.getUniformLocation(program, "uGlobalYaw");
+        var globalPitchUniformLocation = Shim.g.getUniformLocation(program, "uGlobalPitch");
+        var useCameraUniformLocation = Shim.g.getUniformLocation(program, "uUseCamera");  // New uniform location
         var playerPosition = [size/2, 10.0, size/2];
         var playerVelocity = [0.0, 0.0, 0.0];
         var playerAcceleration = [0.0, 0.0, 0.0];
@@ -196,6 +199,9 @@ class Main {
                 }
             }
         }
+        var globalYaw = 0.0;
+        var globalPitch = 0.0;
+
         function loop(t:Float) {
             Shim.g.clear(Shim.g.COLOR_BUFFER_BIT | Shim.g.DEPTH_BUFFER_BIT);
             Shim.g.uniform1f(timeUniformLocation, t);
@@ -299,6 +305,9 @@ class Main {
             Shim.g.uniform1f(cameraYawUniformLocation, cameraYaw);
             Shim.g.uniform1f(cameraPitchUniformLocation, cameraPitch);
             Shim.g.uniform2f(resolutionUniformLocation, Shim.canvas.width, Shim.canvas.height);
+            Shim.g.uniform1f(globalYawUniformLocation, globalYaw);
+            Shim.g.uniform1f(globalPitchUniformLocation, globalPitch);
+            Shim.g.uniform1i(useCameraUniformLocation, 1);
 
             if(getKey("x")) {
                 // shootShotgun(t);
@@ -306,6 +315,11 @@ class Main {
             }
 
             draw(numCubes * 36);
+
+
+            Shim.g.uniform1i(useCameraUniformLocation, 0);
+            draw(36);
+
             mouseMove[0] = mouseMove[1] = 0;
             js.Browser.window.requestAnimationFrame(loop);
         }

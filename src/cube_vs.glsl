@@ -28,6 +28,9 @@ uniform vec2 uResolution;
 uniform vec3 uCameraPosition;
 uniform float uCameraYaw;
 uniform float uCameraPitch;
+uniform float uGlobalYaw;   // New uniform for global yaw
+uniform float uGlobalPitch; // New uniform for global pitch
+uniform bool uUseCamera;  // New boolean uniform
 
 const vec3 cubeNormals[6] = vec3[6](vec3(0.0, 0.0, -1.0), vec3(1.0, 0.0, 0.0), vec3(0.0, 0.0, 1.0),
                                     vec3(-1.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0), vec3(0.0, -1.0, 0.0));
@@ -57,10 +60,6 @@ mat4 computeViewMatrix() {
                 -dot(xaxis, cameraPosition), -dot(yaxis, cameraPosition), -dot(zaxis, cameraPosition), 1.0);
 }
 
-uniform float uParticleSize;
-uniform vec3 uParticlePosition;
-uniform float uParticleLifetime;
-
 void main() {
     int cubeIndex = int(gl_VertexID / 36);
     int faceIndex = int((gl_VertexID % 36) / 6);
@@ -76,22 +75,27 @@ void main() {
 
     position = position + vec3(x, y, z);
 
+    // Apply global rotation
+    float cosYaw = cos(uGlobalYaw);
+    float sinYaw = sin(uGlobalYaw);
+    float cosPitch = cos(uGlobalPitch);
+    float sinPitch = sin(uGlobalPitch);
+
+    mat3 rotationMatrix = mat3(
+        cosYaw, 0.0, -sinYaw,
+        sinYaw * sinPitch, cosPitch, cosYaw * sinPitch,
+        sinYaw * cosPitch, -sinPitch, cosYaw * cosPitch
+    );
+
+    position = rotationMatrix * position;
+
     mat4 projection = computeProjectionMatrix();
     mat4 view = computeViewMatrix();
+
     gl_Position = projection * view * vec4(position, 1.0);
+    vNormal = rotationMatrix * cubeNormals[faceIndex];
 
-    vNormal = cubeNormals[faceIndex];
-
-    // Particle rendering for shotgun blast
-    if (false && gl_VertexID >= 36 * 4096) {
-        int particleIndex = gl_VertexID - 36 * 4096;
-        float t = float(particleIndex) / 100.0; // Adjust for desired particle count
-
-        vec3 particlePos = uParticlePosition + vec3(cos(t * 12.9898) * sin(t * 78.233), sin(t * 43.5453),
-                                                    cos(t * 39.346) * sin(t * 11.798)) *
-                                                   uParticleLifetime;
-
-        gl_Position = projection * view * vec4(particlePos, 1.0);
-        gl_PointSize = uParticleSize / gl_Position.w;
+    if (!uUseCamera) {
+        gl_Position = projection * vec4(position, 1.0);
     }
 }
