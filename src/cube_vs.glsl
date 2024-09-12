@@ -83,11 +83,8 @@ void main() {
     float cosPitch = cos(uGlobalPitch);
     float sinPitch = sin(uGlobalPitch);
 
-    mat3 rotationMatrix = mat3(
-        cosYaw, 0.0, -sinYaw,
-        sinYaw * sinPitch, cosPitch, cosYaw * sinPitch,
-        sinYaw * cosPitch, -sinPitch, cosYaw * cosPitch
-    );
+    mat3 rotationMatrix = mat3(cosYaw, 0.0, -sinYaw, sinYaw * sinPitch, cosPitch, cosYaw * sinPitch, sinYaw * cosPitch,
+                               -sinPitch, cosYaw * cosPitch);
 
     position = rotationMatrix * position;
 
