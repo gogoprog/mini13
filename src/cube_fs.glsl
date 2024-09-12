@@ -37,32 +37,24 @@ void main() {
     vec3 lightDir = normalize(vec3(1.0, 2.0, 1.0));
     vec3 ambient = vec3(0.3, 0.3, 0.3);
     float diff = max(dot(normalize(vNormal), lightDir), 0.0);
-
-    vec3 baseColor;
+    vec3 litColor;
 
     if (uScale >= 999.0) {
         vec2 uv = gl_FragCoord.xy / uResolution;
-        uv.x -= uCameraYaw * 0.5; // Reduced camera yaw effect for slower cloud movement
+        uv.x -= uCameraYaw * 0.5;
 
-        // Improved cloud generation using fBm
         float cloudNoise = fbm(uv * 2.0);
         float cloudShape = smoothstep(0.4, 0.6, cloudNoise);
-
-        // Add some variation to the cloud density
         float cloudDensity = smoothstep(0.1, 0.3, cloudNoise) * 0.1 + cloudShape * 0.2;
-
-        // Cloud color
         vec3 skyColorTop = vec3(0.4, 0.6, 1.0);
         vec3 skyColorBottom = vec3(0.7, 0.8, 1.0);
         vec3 cloudColor = vec3(1.0);
-
-        // Create a gradient for the sky
         vec3 skyColor = mix(skyColorBottom, skyColorTop, uv.y);
 
-        // Mix sky and clouds
-        fragColor = vec4(mix(skyColor, cloudColor, cloudDensity), 1.0);
+        litColor = mix(skyColor, cloudColor, cloudDensity);
 
     } else {
+        vec3 baseColor;
         if (vVertex.y > sin((vVertex.x + vVertex.z) * 30.0) * 0.1) {
             float squareSize = 0.01;
             vec3 squarePos = floor(vVertex.xyz / squareSize);
@@ -79,18 +71,18 @@ void main() {
             baseColor = mix(light, dark, step(0.5, random));
         }
 
-        vec3 litColor = ambient + baseColor * (diff * 0.6 + 0.4);
+        litColor = ambient + baseColor * (diff * 0.6 + 0.4);
+    }
 
-        vec2 uv = gl_FragCoord.xy / uResolution;
-        vec2 center = vec2(0.5, 0.5);
-        float crosshairSize = 0.01;
-        float crosshairThickness = 0.002;
+    vec2 uv = gl_FragCoord.xy / uResolution;
+    vec2 center = vec2(0.5, 0.5);
+    float crosshairSize = 0.01;
+    float crosshairThickness = 0.002;
 
-        if (abs(uv.x - center.x) < crosshairThickness && abs(uv.y - center.y) < crosshairSize ||
-            abs(uv.y - center.y) < crosshairThickness && abs(uv.x - center.x) < crosshairSize) {
-            fragColor = vec4(1.0, 0.0, 0.0, 1.0);
-        } else {
-            fragColor = vec4(litColor, 1.0);
-        }
+    if (abs(uv.x - center.x) < crosshairThickness && abs(uv.y - center.y) < crosshairSize ||
+        abs(uv.y - center.y) < crosshairThickness && abs(uv.x - center.x) < crosshairSize) {
+        fragColor = vec4(1.0, 0.0, 0.0, 1.0);
+    } else {
+        fragColor = vec4(litColor, 1.0);
     }
 }
