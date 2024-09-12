@@ -15,16 +15,22 @@ void main() {
     float diff = max(dot(normalize(vNormal), lightDir), 0.0);
 
     vec3 baseColor;
-    if (vVertex.y > sin((vVertex.x + vVertex.z) * 50.0) * 0.1) {
-        float squareSize = 0.01;
-        vec2 squarePos = floor(vVertex.xz / squareSize);
-        float random = fract(sin(dot(squarePos, vec2(12.9898, 78.233))) * 43758.5453);
 
-        vec3 lightGreen = vec3(0.1, 0.8, 0.2);
-        vec3 darkGreen = vec3(0.1, 0.6, 0.2);
-        baseColor = mix(lightGreen, darkGreen, step(0.5, random));
+    if (vVertex.y > sin((vVertex.x + vVertex.z) * 30.0) * 0.1) {
+        float squareSize = 0.01;
+        vec3 squarePos = floor(vVertex.xyz / squareSize);
+        float random = fract(sin(dot(squarePos, vec3(12.9898, 78.233, 37.67))) * 43758.5453);
+        vec3 light = vec3(0.1, 0.8, 0.2);
+        vec3 dark = vec3(0.1, 0.6, 0.2);
+        baseColor = mix(light, dark, step(0.5, random));
     } else {
+        float squareSize = 0.1;
+        vec3 squarePos = floor(vVertex.xyz / squareSize);
+        float random = fract(sin(dot(squarePos, vec3(12.9898, 78.233, 37.67))) * 43758.5453);
         baseColor = brown;
+        vec3 light = vec3(0.4, 0.2, 0.0);
+        vec3 dark = vec3(0.6, 0.3, 0.0);
+        baseColor = mix(light, dark, step(0.5, random));
     }
 
     vec3 litColor = ambient + baseColor * (diff * 0.6 + 0.4);

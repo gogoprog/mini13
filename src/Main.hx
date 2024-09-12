@@ -87,7 +87,7 @@ class Main {
                 var h = Std.int(Math.random() * 3);
 
                 for(y in 1...h) {
-                    // addCube(x, y, z);
+                    addCube(x, y, z);
                 }
             }
         }
