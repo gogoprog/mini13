@@ -11,15 +11,21 @@ uniform float uTime;
 void main() {
     vec3 lightDir = normalize(vec3(1.0, 2.0, 1.0));
     vec3 ambient = vec3(0.3, 0.3, 0.3);
-    vec3 green = vec3(0.1, 0.8, 0.1);
     vec3 brown = vec3(0.6, 0.3, 0);
     float diff = max(dot(normalize(vNormal), lightDir), 0.0);
 
     vec3 baseColor;
-    if (vVertex.y > sin((vVertex.x + vVertex.z) * 50.0) * 0.1)
-        baseColor = green;
-    else
+    if (vVertex.y > sin((vVertex.x + vVertex.z) * 50.0) * 0.1) {
+        float squareSize = 0.01;
+        vec2 squarePos = floor(vVertex.xz / squareSize);
+        float random = fract(sin(dot(squarePos, vec2(12.9898, 78.233))) * 43758.5453);
+
+        vec3 lightGreen = vec3(0.1, 0.8, 0.2);
+        vec3 darkGreen = vec3(0.1, 0.6, 0.2);
+        baseColor = mix(lightGreen, darkGreen, step(0.5, random));
+    } else {
         baseColor = brown;
+    }
 
     vec3 litColor = ambient + baseColor * (diff * 0.6 + 0.4);
 
