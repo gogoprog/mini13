@@ -92,8 +92,6 @@ class Main {
             }
         }
 
-        trace(dataLen);
-
         var ubo = Shim.g.createBuffer();
         Shim.g.bindBuffer(Shim.g.UNIFORM_BUFFER, ubo);
         Shim.g.bufferData(Shim.g.UNIFORM_BUFFER, data, Shim.g.STATIC_DRAW);

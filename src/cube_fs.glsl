@@ -6,7 +6,6 @@ in vec3 vNormal;
 out vec4 fragColor;
 
 uniform vec2 uResolution;
-uniform float uTime;
 
 void main() {
     vec3 lightDir = normalize(vec3(1.0, 2.0, 1.0));

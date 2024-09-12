@@ -4,7 +4,6 @@ precision highp float;
 out vec3 vVertex;
 out vec3 vNormal;
 
-const float aspect = 16.0 / 9.0;
 const float fov = radians(60.0);
 const float near = 0.1;
 const float far = 1000.0;
@@ -25,7 +24,7 @@ layout(std140) uniform CubeData {
     ivec4 uData[4096];
 };
 
-uniform float uTime;
+uniform vec2 uResolution;
 uniform vec3 uCameraPosition;
 uniform float uCameraYaw;
 uniform float uCameraPitch;
@@ -34,6 +33,7 @@ const vec3 cubeNormals[6] = vec3[6](vec3(0.0, 0.0, -1.0), vec3(1.0, 0.0, 0.0), v
                                     vec3(-1.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0), vec3(0.0, -1.0, 0.0));
 
 mat4 computeProjectionMatrix() {
+    float aspect = uResolution.x / uResolution.y;
     float f = 1.0 / tan(fov * 0.5);
     float rangeInv = 1.0 / (near - far);
 
@@ -66,9 +66,6 @@ void main() {
     int faceIndex = int((gl_VertexID % 36) / 6);
     int vertexIndex = cubeIndices[gl_VertexID % 36];
     vec3 position = cubeVertices[vertexIndex];
-
-    float angle = uTime * 0.001;
-    mat3 rotationMatrix = mat3(cos(angle), 0.0, sin(angle), 0.0, 1.0, 0.0, -sin(angle), 0.0, cos(angle));
 
     vVertex = position;
 
