@@ -28,9 +28,10 @@ uniform vec2 uResolution;
 uniform vec3 uCameraPosition;
 uniform float uCameraYaw;
 uniform float uCameraPitch;
-uniform float uGlobalYaw;   // New uniform for global yaw
-uniform float uGlobalPitch; // New uniform for global pitch
-uniform bool uUseCamera;  // New boolean uniform
+uniform float uGlobalYaw;
+uniform float uGlobalPitch;
+uniform bool uUseCamera;
+uniform float uScale;
 
 const vec3 cubeNormals[6] = vec3[6](vec3(0.0, 0.0, -1.0), vec3(1.0, 0.0, 0.0), vec3(0.0, 0.0, 1.0),
                                     vec3(-1.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0), vec3(0.0, -1.0, 0.0));
@@ -75,7 +76,8 @@ void main() {
 
     position = position + vec3(x, y, z);
 
-    // Apply global rotation
+    position *= uScale;
+
     float cosYaw = cos(uGlobalYaw);
     float sinYaw = sin(uGlobalYaw);
     float cosPitch = cos(uGlobalPitch);
