@@ -55,11 +55,11 @@ class Main {
             return untyped keys[str];
         }
         var program;
-        var src = Macros.getFileContent("src/vs.glsl");
+        var src = Macros.getFileContent("src/cube_vs.glsl");
         var vs = createShader(vertexShader());
         shaderSource(vs, src);
         compileShader(vs);
-        var src = Macros.getFileContent("src/fs.glsl");
+        var src = Macros.getFileContent("src/cube_fs.glsl");
         var fs = createShader(fragmentShader());
         shaderSource(fs, src);
         compileShader(fs);
