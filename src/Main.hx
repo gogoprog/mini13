@@ -239,7 +239,12 @@ class Main {
         var globalPitch = 0.0;
         var lastTime = 0.0;
 
-        // Add this new code after the existing uniform initializations
+        // Add these variables after the existing variable declarations
+        var sphereVelocities:Array<Array<Float>> = [];
+        var sphereDirectionChangeTime:Array<Float> = [];
+        var directionChangeInterval = 2000.0; // Change direction every 2 seconds
+
+        // Modify the sphere initialization code
         var numSpheres = 10; // You can adjust this number
         var spherePositions = new js.lib.Float32Array(numSpheres * 3);
 
@@ -247,6 +252,10 @@ class Main {
             spherePositions[i * 3] = Math.random() * size; // x
             spherePositions[i * 3 + 1] = Math.random() * 5 + 1; // y (1 to 6)
             spherePositions[i * 3 + 2] = Math.random() * size; // z
+            
+            // Initialize velocities and direction change times
+            sphereVelocities.push([Math.random() * 2 - 1, 0, Math.random() * 2 - 1]);
+            sphereDirectionChangeTime.push(0);
         }
 
         Shim.g.uniform3fv(spheresUniformLocation, spherePositions);
@@ -391,6 +400,34 @@ class Main {
 
             Shim.g.uniform1i(useSphereUniformLocation, 0);
             mouseMove[0] = mouseMove[1] = 0;
+
+            // Update sphere positions
+            for (i in 0...numSpheres) {
+                // Change direction if enough time has passed
+                if (t - sphereDirectionChangeTime[i] > directionChangeInterval) {
+                    sphereVelocities[i] = [Math.random() * 2 - 1, 0, Math.random() * 2 - 1];
+                    sphereDirectionChangeTime[i] = t;
+                }
+
+                // Update position
+                var newX = spherePositions[i * 3] + sphereVelocities[i][0] * deltaTime;
+                var newY = spherePositions[i * 3 + 1];
+                var newZ = spherePositions[i * 3 + 2] + sphereVelocities[i][2] * deltaTime;
+
+                // Check for collisions and update position
+                if (!checkCollision(newX, newY, newZ)) {
+                    spherePositions[i * 3] = newX;
+                    spherePositions[i * 3 + 2] = newZ;
+                } else {
+                    // If collision, reverse direction
+                    sphereVelocities[i][0] *= -1;
+                    sphereVelocities[i][2] *= -1;
+                }
+            }
+
+            // Update the uniform with new sphere positions
+            Shim.g.uniform3fv(spheresUniformLocation, spherePositions);
+
             js.Browser.window.requestAnimationFrame(loop);
         }
         js.Browser.window.requestAnimationFrame(loop);
