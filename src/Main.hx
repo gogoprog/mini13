@@ -257,6 +257,37 @@ class Main {
             var distanceSquared = dx*dx + dy*dy + dz*dz;
             return distanceSquared < 0.5 * 0.5; // 0.5 is the sphere radius
         }
+        // Add this variable at the class level
+        var centerTextElement:js.html.Element = null;
+        // Modify the displayCenterText function
+        function displayCenterText(text:String) {
+            if(centerTextElement != null) {
+                centerTextElement.remove();
+            }
+
+            centerTextElement = js.Browser.document.createElement('div');
+            centerTextElement.innerHTML = text;
+            centerTextElement.style.position = 'absolute';
+            centerTextElement.style.top = '50%';
+            centerTextElement.style.left = '50%';
+            centerTextElement.style.transform = 'translate(-50%, -50%)';
+            centerTextElement.style.fontSize = '24px';
+            centerTextElement.style.color = 'white';
+            centerTextElement.style.fontFamily = 'Arial, sans-serif';
+            centerTextElement.style.textAlign = 'center';
+            centerTextElement.style.padding = '20px';
+            centerTextElement.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+            centerTextElement.style.borderRadius = '10px';
+            js.Browser.document.body.appendChild(centerTextElement);
+        }
+        // Modify the clearCenterText function
+        function clearCenterText() {
+            if(centerTextElement != null) {
+                centerTextElement.remove();
+                centerTextElement = null;
+            }
+        }
+        displayCenterText("Kill all 13 monsters!");
         function loop(t:Float) {
             if(!windowIsVisible) {
                 js.Browser.window.setTimeout(function() {loop(t+1);}, 1000);
@@ -264,6 +295,13 @@ class Main {
             }
 
             t /= 1000;
+
+            if(t<10 && t>3) {
+                if(centerTextElement!= null) {
+                    clearCenterText();
+                }
+            }
+
             var deltaTime = t - lastTime; // Convert to seconds
             lastTime = t;
             // Shim.g.clear(Shim.g.COLOR_BUFFER_BIT | Shim.g.DEPTH_BUFFER_BIT);
@@ -421,6 +459,7 @@ class Main {
                                 sphereVelocities[j] = sphereVelocities[j + 1];
                                 sphereDirectionChangeTime[j] = sphereDirectionChangeTime[j + 1];
                             }
+
                             numSpheres--;
                             return false; // Remove the bullet
                         }
@@ -466,6 +505,12 @@ class Main {
 
             // Update the uniform with new sphere positions and count
             Shim.g.uniform3fv(spheresUniformLocation, spherePositions.subarray(0, numSpheres * 3));
+
+            // Example usage: Display text when all monsters are defeated
+            if(numSpheres == 0) {
+                displayCenterText("Congratulations!<br>You defeated all monsters!");
+            }
+
             js.Browser.window.requestAnimationFrame(loop);
         }
         js.Browser.window.requestAnimationFrame(loop);
