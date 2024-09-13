@@ -95,27 +95,45 @@ mat4 computeViewMatrix() {
 }
 
 void main() {
-    int cubeIndex = int(gl_VertexID / 36);
-    int faceIndex = int((gl_VertexID % 36) / 6);
-    int vertexIndex = cubeIndices[gl_VertexID % 36];
-    vec3 position = cubeVertices[vertexIndex];
+    vec3 position;
+    vec3 normal;
 
-    vVertex = position;
+    if (uSphere) {
+        // int sphereIndex = int(gl_VertexID / 72);
+        int faceIndex = int((gl_VertexID % 72) / 36);
+        int vertexIndex = sphereIndices[gl_VertexID % 72];
+        position = sphereVertices[vertexIndex];
 
-    int value = int(uData[int(cubeIndex / 4)][cubeIndex % 4]);
-    float x = float(value & 255);
-    float y = float((value >> 8) & 255);
-    float z = float((value >> 16) & 255);
+        vVertex = position;
+        // position = position + vec3(x, y, z);
 
-    position = position + vec3(x, y, z);
+        position *= uScale;
 
-    position *= uScale;
+        normal = sphereNormals[faceIndex];
+    } else {
+        int cubeIndex = int(gl_VertexID / 36);
+        int faceIndex = int((gl_VertexID % 36) / 6);
+        int vertexIndex = cubeIndices[gl_VertexID % 36];
+        position = cubeVertices[vertexIndex];
+
+        vVertex = position;
+
+        int value = int(uData[int(cubeIndex / 4)][cubeIndex % 4]);
+        float x = float(value & 255);
+        float y = float((value >> 8) & 255);
+        float z = float((value >> 16) & 255);
+
+        position = position + vec3(x, y, z);
+
+        position *= uScale;
+
+        normal = cubeNormals[faceIndex];
+    }
 
     float cosYaw = cos(uGlobalYaw);
     float sinYaw = sin(uGlobalYaw);
     float cosPitch = cos(uGlobalPitch);
     float sinPitch = sin(uGlobalPitch);
-
     mat3 rotationMatrix = mat3(cosYaw, 0.0, -sinYaw, sinYaw * sinPitch, cosPitch, cosYaw * sinPitch, sinYaw * cosPitch,
                                -sinPitch, cosYaw * cosPitch);
 
@@ -125,7 +143,7 @@ void main() {
     mat4 view = computeViewMatrix();
 
     gl_Position = projection * view * vec4(position, 1.0);
-    vNormal = rotationMatrix * cubeNormals[faceIndex];
+    vNormal = rotationMatrix * normal;
 
     if (!uUseCamera) {
         gl_Position = projection * vec4(position, 1.0);

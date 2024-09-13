@@ -362,6 +362,13 @@ class Main {
                 draw(numCubes * 36);
             }
 
+            {
+                // Monsters
+                Shim.g.uniform1i(useSphereUniformLocation, 1);
+                Shim.g.uniform1f(scaleUniformLocation, 5.0);
+                draw(1 * 72);
+            }
+
             Shim.g.uniform1i(useSphereUniformLocation, 0);
             mouseMove[0] = mouseMove[1] = 0;
             js.Browser.window.requestAnimationFrame(loop);
