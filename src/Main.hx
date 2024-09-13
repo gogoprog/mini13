@@ -12,6 +12,7 @@ class Main {
         var time:Int = 0;
         var keys:Dynamic = {};
         var mouseMove = [0, 0];
+        var windowIsVisible = true;
         js.Syntax.code(" for(i in g=c.getContext(`webgl2`)) { g[i[0]+i[6]]=g[i]; } ");
         inline function createProgram() {
             return Shim.g.cP();
@@ -72,6 +73,8 @@ class Main {
         inline function getKey(str:String) {
             return untyped keys[str];
         }
+        untyped window.onfocus = (e) -> { windowIsVisible = true; };
+        untyped window.onblur = (e) -> { windowIsVisible = false; };
         var program;
         var src = Macros.getFileContent("src/vs.glsl");
         var vs = createShader(vertexShader());
@@ -229,6 +232,11 @@ class Main {
         var globalPitch = 0.0;
         var lastTime = 0.0;
         function loop(t:Float) {
+            if(!windowIsVisible) {
+                js.Browser.window.setTimeout(function() {loop(t+1);}, 1000);
+                return;
+            }
+
             var deltaTime = (t - lastTime) / 1000.0; // Convert to seconds
             lastTime = t;
             // Shim.g.clear(Shim.g.COLOR_BUFFER_BIT | Shim.g.DEPTH_BUFFER_BIT);
