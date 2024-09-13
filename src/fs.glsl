@@ -5,6 +5,7 @@ uniform vec2 uResolution;
 uniform float uScale;
 uniform float uCameraYaw;
 uniform float uCameraPitch;
+uniform bool uSphere;
 
 in vec3 vVertex;
 in vec3 vNormal;
@@ -70,6 +71,16 @@ void main() {
             float random = fract(sin(dot(squarePos, vec3(12.9898, 78.233, 37.67))) * 43758.5453);
             vec3 light = vec3(0.4, 0.2, 0.0);
             vec3 dark = vec3(0.6, 0.3, 0.0);
+            baseColor = mix(light, dark, step(0.5, random));
+        }
+
+        if(uSphere)
+        {
+            float squareSize = 0.1;
+            vec3 squarePos = floor(vVertex.xyz / squareSize);
+            float random = fract(sin(dot(squarePos, vec3(12.9898, 78.233, 37.67))) * 43758.5453);
+            vec3 light = vec3(0.4, 0.0, 0.0);
+            vec3 dark = vec3(0.6, 0.0, 0.0);
             baseColor = mix(light, dark, step(0.5, random));
         }
 

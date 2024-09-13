@@ -138,6 +138,10 @@ class Main {
         var useCameraUniformLocation = Shim.g.getUniformLocation(program, "uUseCamera");
         var useSphereUniformLocation = Shim.g.getUniformLocation(program, "uSphere");
         var scaleUniformLocation = Shim.g.getUniformLocation(program, "uScale");
+
+        // Add this new uniform location
+        var spheresUniformLocation = Shim.g.getUniformLocation(program, "uSpheres");
+
         var playerPosition = [size/2, 10.0, size/2];
         var playerVelocity = [0.0, 0.0, 0.0];
         var playerAcceleration = [0.0, 0.0, 0.0];
@@ -234,6 +238,19 @@ class Main {
         var globalYaw = 0.0;
         var globalPitch = 0.0;
         var lastTime = 0.0;
+
+        // Add this new code after the existing uniform initializations
+        var numSpheres = 10; // You can adjust this number
+        var spherePositions = new js.lib.Float32Array(numSpheres * 3);
+
+        for (i in 0...numSpheres) {
+            spherePositions[i * 3] = Math.random() * size; // x
+            spherePositions[i * 3 + 1] = Math.random() * 5 + 1; // y (1 to 6)
+            spherePositions[i * 3 + 2] = Math.random() * size; // z
+        }
+
+        Shim.g.uniform3fv(spheresUniformLocation, spherePositions);
+
         {
             Shim.g.uniform2f(resolutionUniformLocation, Shim.canvas.width, Shim.canvas.height);
         }
@@ -368,8 +385,8 @@ class Main {
             {
                 // Monsters
                 Shim.g.uniform1i(useSphereUniformLocation, 1);
-                Shim.g.uniform1f(scaleUniformLocation, 5.0);
-                draw(1 * 60);
+                Shim.g.uniform1f(scaleUniformLocation, 0.5); // Adjust scale as needed
+                draw(numSpheres * 60); // Update the number of vertices to draw
             }
 
             Shim.g.uniform1i(useSphereUniformLocation, 0);

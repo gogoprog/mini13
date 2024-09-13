@@ -18,6 +18,8 @@ uniform bool uUseCamera;
 uniform bool uSphere;
 uniform float uScale;
 
+uniform vec3 uSpheres[32];
+
 const float fov = radians(60.0);
 const float near = 0.1;
 const float far = 1000.0;
@@ -77,12 +79,13 @@ void main() {
     vec3 normal;
 
     if (uSphere) {
+        int sphereIndex = int(gl_VertexID / 60);
         int vertexIndex = sphereIndices[gl_VertexID % 60];
         position = sphereVertices[vertexIndex];
         normal = normalize(position);
         position *= uScale;
 
-        position += vec3(10.0, 5.0, 12.0);
+        position += uSpheres[sphereIndex];
 
         vVertex = position;
     } else {
