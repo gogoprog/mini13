@@ -147,7 +147,7 @@ class Main {
         var maxSpeed = 4.0;
         var lastShotTime = 0.0;
         var shotCooldown = 0.1;
-        var bulletSpeed = 10.0;
+        var bulletSpeed = 20.0;
         var bulletSpread = 0.0;
         var bulletsPerShot = 8;
         var resolutionUniformLocation = Shim.g.getUniformLocation(program, "uResolution");
@@ -212,13 +212,17 @@ class Main {
         // Modify the sphere initialization code
         var numSpheres = 13; // You can adjust this number
         var spherePositions = new js.lib.Float32Array(numSpheres * 3);
+        var sphereSpeed = 3.0; // Increase this value to make monsters faster
 
         for(i in 0...numSpheres) {
-            spherePositions[i * 3] = Math.random() * size; // x
-            spherePositions[i * 3 + 1] = Math.random() * 5 + 1; // y (1 to 6)
-            spherePositions[i * 3 + 2] = Math.random() * size; // z
-            // Initialize velocities and direction change times
-            sphereVelocities.push([Math.random() * 2 - 1, 0, Math.random() * 2 - 1]);
+            spherePositions[i * 3] = Math.random() * size;
+            spherePositions[i * 3 + 1] = Math.random() * 4 + 2;
+            spherePositions[i * 3 + 2] = Math.random() * size;
+            sphereVelocities.push([
+                                      (Math.random() * 2 - 1) * sphereSpeed,
+                                      0,
+                                      (Math.random() * 2 - 1) * sphereSpeed
+                                  ]);
             sphereDirectionChangeTime.push(0);
         }
 
@@ -240,7 +244,7 @@ class Main {
             var dirZ = Math.cos(cameraPitch) * Math.cos(cameraYaw) + spreadZ;
             var dir = normalizeVector([dirX, dirY, dirZ]);
             bullets.push({
-                position: [cameraPosition[0], cameraPosition[1], cameraPosition[2]],
+                position: [cameraPosition[0], cameraPosition[1] - 0.1, cameraPosition[2]],
                 velocity: multiplyVector(dir, -bulletSpeed),
                 timeAlive: 0
             });
@@ -492,24 +496,32 @@ class Main {
             for(i in 0...numSpheres) {
                 // Change direction if enough time has passed
                 if(t - sphereDirectionChangeTime[i] > directionChangeInterval) {
-                    sphereVelocities[i] = [Math.random() * 2 - 1, 0, Math.random() * 2 - 1];
+                    sphereVelocities[i] = [
+                                              (Math.random() * 2 - 1) * sphereSpeed,
+                                              0,
+                                              (Math.random() * 2 - 1) * sphereSpeed
+                                          ];
                     sphereDirectionChangeTime[i] = t;
                 }
 
                 // Update position
                 var newX = spherePositions[i * 3] + sphereVelocities[i][0] * deltaTime;
-                var newY = spherePositions[i * 3 + 1];
                 var newZ = spherePositions[i * 3 + 2] + sphereVelocities[i][2] * deltaTime;
 
-                // Check for collisions and update position
-                if(!checkCollision(newX, newY, newZ)) {
-                    spherePositions[i * 3] = newX;
-                    spherePositions[i * 3 + 2] = newZ;
-                } else {
-                    // If collision, reverse direction
+                // Keep monsters within the world area
+                if(newX < 0 || newX >= size) {
                     sphereVelocities[i][0] *= -1;
-                    sphereVelocities[i][2] *= -1;
+                    newX = Math.max(0, Math.min(newX, size - 0.1));
                 }
+
+                if(newZ < 0 || newZ >= size) {
+                    sphereVelocities[i][2] *= -1;
+                    newZ = Math.max(0, Math.min(newZ, size - 0.1));
+                }
+
+                // Update position
+                spherePositions[i * 3] = newX;
+                spherePositions[i * 3 + 2] = newZ;
             }
 
             // Update the uniform with new sphere positions and count
