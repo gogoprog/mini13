@@ -249,6 +249,14 @@ class Main {
             Shim.canvas.requestPointerLock();
             shootShotgun(lastTime);
         };
+        // Add this function after the checkCollision function
+        function checkSphereCollision(x:Float, y:Float, z:Float, sphereIndex:Int):Bool {
+            var dx = x - spherePositions[sphereIndex * 3];
+            var dy = y - spherePositions[sphereIndex * 3 + 1];
+            var dz = z - spherePositions[sphereIndex * 3 + 2];
+            var distanceSquared = dx*dx + dy*dy + dz*dz;
+            return distanceSquared < 0.5 * 0.5; // 0.5 is the sphere radius
+        }
         function loop(t:Float) {
             if(!windowIsVisible) {
                 js.Browser.window.setTimeout(function() {loop(t+1);}, 1000);
@@ -402,6 +410,22 @@ class Main {
                         return false;
                     }
 
+                    // Check collision with monsters
+                    for(i in 0...numSpheres) {
+                        if(checkSphereCollision(bullet.position[0], bullet.position[1], bullet.position[2], i)) {
+                            // Remove the monster
+                            for(j in i...numSpheres-1) {
+                                spherePositions[j * 3] = spherePositions[(j + 1) * 3];
+                                spherePositions[j * 3 + 1] = spherePositions[(j + 1) * 3 + 1];
+                                spherePositions[j * 3 + 2] = spherePositions[(j + 1) * 3 + 2];
+                                sphereVelocities[j] = sphereVelocities[j + 1];
+                                sphereDirectionChangeTime[j] = sphereDirectionChangeTime[j + 1];
+                            }
+                            numSpheres--;
+                            return false; // Remove the bullet
+                        }
+                    }
+
                     bulletPositions[j * 3] = bullet.position[0];
                     bulletPositions[j * 3 + 1] = bullet.position[1];
                     bulletPositions[j * 3 + 2] = bullet.position[2];
@@ -440,8 +464,8 @@ class Main {
                 }
             }
 
-            // Update the uniform with new sphere positions
-            Shim.g.uniform3fv(spheresUniformLocation, spherePositions);
+            // Update the uniform with new sphere positions and count
+            Shim.g.uniform3fv(spheresUniformLocation, spherePositions.subarray(0, numSpheres * 3));
             js.Browser.window.requestAnimationFrame(loop);
         }
         js.Browser.window.requestAnimationFrame(loop);
