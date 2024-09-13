@@ -62,10 +62,6 @@ class Main {
         inline function draw(count) {
             Shim.g.dr(Shim.g.TRIANGLES, 0, count);
         }
-        inline function draw2(count) {
-            Shim.g.dr(Shim.g.TRIANGLE_STRIP, 0, count);
-        }
-        Shim.canvas.onclick = e -> Shim.canvas.requestPointerLock();
         Shim.canvas.onmousemove = function(e) {
             mouseMove[0] += e.movementX;
             mouseMove[1] += e.movementY;
@@ -138,10 +134,8 @@ class Main {
         var useCameraUniformLocation = Shim.g.getUniformLocation(program, "uUseCamera");
         var useSphereUniformLocation = Shim.g.getUniformLocation(program, "uSphere");
         var scaleUniformLocation = Shim.g.getUniformLocation(program, "uScale");
-
         // Add this new uniform location
         var spheresUniformLocation = Shim.g.getUniformLocation(program, "uSpheres");
-
         var playerPosition = [size/2, 10.0, size/2];
         var playerVelocity = [0.0, 0.0, 0.0];
         var playerAcceleration = [0.0, 0.0, 0.0];
@@ -152,10 +146,10 @@ class Main {
         var deceleration = 10.0;
         var maxSpeed = 4.0;
         var lastShotTime = 0.0;
-        var shotCooldown = 0.5;
-        var bulletSpeed = 50.0;
+        var shotCooldown = 0.1;
+        var bulletSpeed = 1.0;
         var bulletRange = 20.0;
-        var bulletSpread = 0.1;
+        var bulletSpread = 0.0;
         var bulletsPerShot = 8;
         var resolutionUniformLocation = Shim.g.getUniformLocation(program, "uResolution");
         function normalizeVector(v:Array<Float>):Array<Float> {
@@ -209,67 +203,61 @@ class Main {
 
             return false;
         }
-        function shootShotgun(currentTime:Float) {
-            if(currentTime - lastShotTime < shotCooldown) { return; }
-
-            lastShotTime = currentTime;
-
-            for(i in 0...bulletsPerShot) {
-                var spreadX = (Math.random() - 0.5) * bulletSpread;
-                var spreadY = (Math.random() - 0.5) * bulletSpread;
-                var spreadZ = (Math.random() - 0.5) * bulletSpread;
-                var dirX = Math.cos(cameraPitch) * Math.sin(cameraYaw) + spreadX;
-                var dirY = Math.sin(cameraPitch) + spreadY;
-                var dirZ = Math.cos(cameraPitch) * Math.cos(cameraYaw) + spreadZ;
-                var dir = normalizeVector([dirX, dirY, dirZ]);
-                var start = [cameraPosition[0], cameraPosition[1], cameraPosition[2]];
-                var end = addVectors(start, multiplyVector(dir, bulletRange));
-
-                for(j in 0...Std.int(bulletRange)) {
-                    var point = addVectors(start, multiplyVector(dir, j));
-
-                    if(checkCollision(point[0], point[1], point[2])) {
-                        trace('Hit block at ${point[0]}, ${point[1]}, ${point[2]}');
-                        break;
-                    }
-                }
-            }
-        }
         var globalYaw = 0.0;
         var globalPitch = 0.0;
         var lastTime = 0.0;
-
         // Add these variables after the existing variable declarations
         var sphereVelocities:Array<Array<Float>> = [];
         var sphereDirectionChangeTime:Array<Float> = [];
         var directionChangeInterval = 2000.0; // Change direction every 2 seconds
-
         // Modify the sphere initialization code
         var numSpheres = 10; // You can adjust this number
         var spherePositions = new js.lib.Float32Array(numSpheres * 3);
 
-        for (i in 0...numSpheres) {
+        for(i in 0...numSpheres) {
             spherePositions[i * 3] = Math.random() * size; // x
             spherePositions[i * 3 + 1] = Math.random() * 5 + 1; // y (1 to 6)
             spherePositions[i * 3 + 2] = Math.random() * size; // z
-            
             // Initialize velocities and direction change times
             sphereVelocities.push([Math.random() * 2 - 1, 0, Math.random() * 2 - 1]);
             sphereDirectionChangeTime.push(0);
         }
 
         Shim.g.uniform3fv(spheresUniformLocation, spherePositions);
-
         {
             Shim.g.uniform2f(resolutionUniformLocation, Shim.canvas.width, Shim.canvas.height);
         }
+        var bullets:Array< {position:Array<Float>, velocity:Array<Float>, timeAlive:Float}> = [];
+        var maxBulletLifetime = 10.0; // Bullets disappear after 2 seconds
+        function shootShotgun(currentTime:Float) {
+            if(currentTime - lastShotTime < shotCooldown) { return; }
+
+            lastShotTime = currentTime;
+            var spreadX = (Math.random() - 0.5) * bulletSpread;
+            var spreadY = (Math.random() - 0.5) * bulletSpread;
+            var spreadZ = (Math.random() - 0.5) * bulletSpread;
+            var dirX = Math.cos(cameraPitch) * Math.sin(cameraYaw) + spreadX;
+            var dirY = Math.sin(cameraPitch) + spreadY;
+            var dirZ = Math.cos(cameraPitch) * Math.cos(cameraYaw) + spreadZ;
+            var dir = normalizeVector([dirX, dirY, dirZ]);
+            bullets.push({
+                position: [cameraPosition[0], cameraPosition[1], cameraPosition[2]],
+                velocity: multiplyVector(dir, -bulletSpeed),
+                timeAlive: 0
+            });
+        }
+        Shim.canvas.onmousedown = function(e) {
+            Shim.canvas.requestPointerLock();
+            shootShotgun(lastTime);
+        };
         function loop(t:Float) {
             if(!windowIsVisible) {
                 js.Browser.window.setTimeout(function() {loop(t+1);}, 1000);
                 return;
             }
 
-            var deltaTime = (t - lastTime) / 1000.0; // Convert to seconds
+            t /= 1000;
+            var deltaTime = t - lastTime; // Convert to seconds
             lastTime = t;
             // Shim.g.clear(Shim.g.COLOR_BUFFER_BIT | Shim.g.DEPTH_BUFFER_BIT);
             Shim.g.uniform1f(timeUniformLocation, t);
@@ -394,17 +382,44 @@ class Main {
             {
                 // Monsters
                 Shim.g.uniform1i(useSphereUniformLocation, 1);
-                Shim.g.uniform1f(scaleUniformLocation, 0.5); // Adjust scale as needed
-                draw(numSpheres * 60); // Update the number of vertices to draw
+                Shim.g.uniform1f(scaleUniformLocation, 0.5);
+                draw(numSpheres * 60);
+            }
+
+            {
+                // Update and draw bullets
+                var bulletPositions = new js.lib.Float32Array(bullets.length * 3);
+                var j = 0;
+                bullets = bullets.filter(function(bullet) {
+                    bullet.timeAlive += deltaTime;
+
+                    if(bullet.timeAlive > maxBulletLifetime) { return false; }
+
+                    bullet.position[0] += bullet.velocity[0] * deltaTime;
+                    bullet.position[1] += bullet.velocity[1] * deltaTime;
+                    bullet.position[2] += bullet.velocity[2] * deltaTime;
+                    // if(checkCollision(bullet.position[0], bullet.position[1], bullet.position[2])) {
+                    //     return false;
+                    // }
+                    bulletPositions[j * 3] = bullet.position[0];
+                    bulletPositions[j * 3 + 1] = bullet.position[1];
+                    bulletPositions[j * 3 + 2] = bullet.position[2];
+                    j++;
+                    return true;
+                });
+                Shim.g.uniform3fv(spheresUniformLocation, bulletPositions);
+                Shim.g.uniform1f(scaleUniformLocation, 0.05);
+                draw(bullets.length * 60);
+                trace(bullets.length);
             }
 
             Shim.g.uniform1i(useSphereUniformLocation, 0);
             mouseMove[0] = mouseMove[1] = 0;
 
             // Update sphere positions
-            for (i in 0...numSpheres) {
+            for(i in 0...numSpheres) {
                 // Change direction if enough time has passed
-                if (t - sphereDirectionChangeTime[i] > directionChangeInterval) {
+                if(t - sphereDirectionChangeTime[i] > directionChangeInterval) {
                     sphereVelocities[i] = [Math.random() * 2 - 1, 0, Math.random() * 2 - 1];
                     sphereDirectionChangeTime[i] = t;
                 }
@@ -415,7 +430,7 @@ class Main {
                 var newZ = spherePositions[i * 3 + 2] + sphereVelocities[i][2] * deltaTime;
 
                 // Check for collisions and update position
-                if (!checkCollision(newX, newY, newZ)) {
+                if(!checkCollision(newX, newY, newZ)) {
                     spherePositions[i * 3] = newX;
                     spherePositions[i * 3 + 2] = newZ;
                 } else {
@@ -427,7 +442,6 @@ class Main {
 
             // Update the uniform with new sphere positions
             Shim.g.uniform3fv(spheresUniformLocation, spherePositions);
-
             js.Browser.window.requestAnimationFrame(loop);
         }
         js.Browser.window.requestAnimationFrame(loop);

@@ -18,7 +18,7 @@ uniform bool uUseCamera;
 uniform bool uSphere;
 uniform float uScale;
 
-uniform vec3 uSpheres[32];
+uniform vec3 uSpheres[512];
 
 const float fov = radians(60.0);
 const float near = 0.1;
