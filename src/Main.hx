@@ -245,9 +245,13 @@ class Main {
                 timeAlive: 0
             });
         }
+        var mouseDown = false;
         Shim.canvas.onmousedown = function(e) {
             Shim.canvas.requestPointerLock();
-            shootShotgun(lastTime);
+            mouseDown = true;
+        };
+        Shim.canvas.onmouseup = function(e) {
+            mouseDown = false;
         };
         // Add this function after the checkCollision function
         function checkSphereCollision(x:Float, y:Float, z:Float, sphereIndex:Int):Bool {
@@ -304,6 +308,11 @@ class Main {
 
             var deltaTime = t - lastTime; // Convert to seconds
             lastTime = t;
+
+            if(mouseDown) {
+                shootShotgun(t);
+            }
+
             // Shim.g.clear(Shim.g.COLOR_BUFFER_BIT | Shim.g.DEPTH_BUFFER_BIT);
             Shim.g.uniform1f(timeUniformLocation, t);
             var moveSpeed = 0.8;
