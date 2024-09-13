@@ -1,14 +1,14 @@
 #version 300 es
 precision highp float;
 
-in vec3 vVertex;
-in vec3 vNormal;
-out vec4 fragColor;
-
 uniform vec2 uResolution;
 uniform float uScale;
 uniform float uCameraYaw;
 uniform float uCameraPitch;
+
+in vec3 vVertex;
+in vec3 vNormal;
+out vec4 fragColor;
 
 float random(vec2 st) {
     return fract(sin(dot(st.xy, vec2(12.9898, 78.233))) * 43758.5453123);

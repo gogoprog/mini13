@@ -130,6 +130,7 @@ class Main {
         var globalYawUniformLocation = Shim.g.getUniformLocation(program, "uGlobalYaw");
         var globalPitchUniformLocation = Shim.g.getUniformLocation(program, "uGlobalPitch");
         var useCameraUniformLocation = Shim.g.getUniformLocation(program, "uUseCamera");
+        var useSphereUniformLocation = Shim.g.getUniformLocation(program, "uSphere");
         var scaleUniformLocation = Shim.g.getUniformLocation(program, "uScale");
         var playerPosition = [size/2, 10.0, size/2];
         var playerVelocity = [0.0, 0.0, 0.0];
@@ -327,23 +328,26 @@ class Main {
             cameraPosition[0] = playerPosition[0];
             cameraPosition[1] = playerPosition[1] + 0.2;
             cameraPosition[2] = playerPosition[2];
-            Shim.g.uniform1i(useCameraUniformLocation, 0);
-            Shim.g.uniform1f(scaleUniformLocation, 1000.0);
-            draw(36);
-            Shim.g.uniform3f(cameraPositionUniformLocation, cameraPosition[0], cameraPosition[1], cameraPosition[2]);
-            Shim.g.uniform1f(cameraYawUniformLocation, cameraYaw);
-            Shim.g.uniform1f(cameraPitchUniformLocation, cameraPitch);
-            Shim.g.uniform2f(resolutionUniformLocation, Shim.canvas.width, Shim.canvas.height);
-            Shim.g.uniform1f(globalYawUniformLocation, globalYaw);
-            Shim.g.uniform1f(globalPitchUniformLocation, globalPitch);
-            Shim.g.uniform1i(useCameraUniformLocation, 1);
-            Shim.g.uniform1f(scaleUniformLocation, 1.0);
-
-            if(getKey("x")) {
-                trace(playerPosition);
+            {
+                // Skybox
+                Shim.g.uniform1i(useSphereUniformLocation, 0);
+                Shim.g.uniform1i(useCameraUniformLocation, 0);
+                Shim.g.uniform1f(scaleUniformLocation, 1000.0);
+                draw(36);
             }
-
-            draw(numCubes * 36);
+            {
+                // World
+                Shim.g.uniform3f(cameraPositionUniformLocation, cameraPosition[0], cameraPosition[1], cameraPosition[2]);
+                Shim.g.uniform1f(cameraYawUniformLocation, cameraYaw);
+                Shim.g.uniform1f(cameraPitchUniformLocation, cameraPitch);
+                Shim.g.uniform2f(resolutionUniformLocation, Shim.canvas.width, Shim.canvas.height);
+                Shim.g.uniform1f(globalYawUniformLocation, globalYaw);
+                Shim.g.uniform1f(globalPitchUniformLocation, globalPitch);
+                Shim.g.uniform1i(useCameraUniformLocation, 1);
+                Shim.g.uniform1f(scaleUniformLocation, 1.0);
+                draw(numCubes * 36);
+            }
+            Shim.g.uniform1i(useSphereUniformLocation, 0);
             mouseMove[0] = mouseMove[1] = 0;
             js.Browser.window.requestAnimationFrame(loop);
         }
