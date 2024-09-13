@@ -69,8 +69,8 @@ class Main {
         untyped onkeydown = onkeyup = function(e) {
             keys[e.key] = e.type[3] == 'd';
         }
-        inline function getKey(str:String) {
-            return untyped keys[str];
+        function getKey(str:String) {
+            return keys[untyped str];
         }
         untyped window.onfocus = (e) -> { windowIsVisible = true; };
         untyped window.onblur = (e) -> { windowIsVisible = false; };
@@ -106,8 +106,7 @@ class Main {
                 addCube(x, 0, z);
 
                 if(Math.random() > 0.9) {
-                    var h = Std.int(Math.random() * 3);
-                    h = 2;
+                    var h = Std.int(Math.random() * 4);
 
                     for(y in 1...h) {
                         addCube(x, y, z);
@@ -140,7 +139,7 @@ class Main {
         var playerVelocity = [0.0, 0.0, 0.0];
         var playerAcceleration = [0.0, 0.0, 0.0];
         var gravity = -15;
-        var jumpVelocity = 5.0;
+        var jumpVelocity = 8.0;
         var isOnGround = false;
         var acceleration = 20.0;
         var deceleration = 10.0;
@@ -336,6 +335,7 @@ class Main {
             if(getKey("w")) {
                 playerAcceleration[0] -= dirX * acceleration;
                 playerAcceleration[2] -= dirZ * acceleration;
+                trace("yep");
             }
 
             if(getKey("s")) {
@@ -484,9 +484,12 @@ class Main {
                     j++;
                     return true;
                 });
-                Shim.g.uniform3fv(spheresUniformLocation, bulletPositions);
-                Shim.g.uniform1f(scaleUniformLocation, 0.02);
-                draw(bullets.length * 60);
+
+                if(bulletPositions.length > 0) {
+                    Shim.g.uniform3fv(spheresUniformLocation, bulletPositions);
+                    Shim.g.uniform1f(scaleUniformLocation, 0.02);
+                    draw(bullets.length * 60);
+                }
             }
 
             Shim.g.uniform1i(useSphereUniformLocation, 0);

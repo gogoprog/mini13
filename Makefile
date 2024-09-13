@@ -28,9 +28,12 @@ retail: compile
 	rm -rf retail
 	mkdir -p retail
 	terser --compress unsafe_arrows=true,unsafe=true,toplevel=true,passes=8 --mangle --mangle-props --toplevel --ecma 6 -O ascii_only=true -- temp/main.js > temp/main.min.js
+	# terser --compress toplevel=true,passes=2 --ecma 6 -O ascii_only=true -- temp/main.js > temp/main.min.js
+	# terser --compress toplevel=true,passes=2 --ecma 6 -O ascii_only=true -- temp/main.js > temp/main.min.js
+	# cp temp/main.js temp/main.min.js
 	# regpack temp/main.min.js > temp/main.min.regpack.js
 	# cat src/before.html temp/main.min.regpack.js src/after.html | tr -d '\n' > retail/index.html
-	cat src/before.html temp/main.min.js src/after.html > retail/index.html
+	cat src/before_dev.html temp/main.min.js src/after_dev.html > retail/index.html
 	stat retail/index.html | grep Size
 
 zip: retail

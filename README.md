@@ -1,9 +1,9 @@
-# 
+# Mini13
 
 
-## JS1024
+## js13k
 
-Entry for JS1024 2024
+Entry for js13k 2024
 
 ## Build
 
@@ -15,4 +15,3 @@ The minimization process I used is the following:
 
  * Manual strip of Haxe function
  * https://github.com/terser/terser
- * https://github.com/Siorki/RegPack
