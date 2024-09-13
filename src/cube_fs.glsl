@@ -8,6 +8,7 @@ out vec4 fragColor;
 uniform vec2 uResolution;
 uniform float uScale;
 uniform float uCameraYaw;
+uniform float uCameraPitch;
 
 float random(vec2 st) {
     return fract(sin(dot(st.xy, vec2(12.9898, 78.233))) * 43758.5453123);
@@ -42,6 +43,7 @@ void main() {
     if (uScale >= 999.0) {
         vec2 uv = gl_FragCoord.xy / uResolution;
         uv.x -= uCameraYaw * 0.5;
+        uv.y -= uCameraPitch;
 
         float cloudNoise = fbm(uv * 2.0);
         float cloudShape = smoothstep(0.4, 0.6, cloudNoise);
@@ -79,8 +81,14 @@ void main() {
     float crosshairSize = 0.01;
     float crosshairThickness = 0.002;
 
-    if (abs(uv.x - center.x) < crosshairThickness && abs(uv.y - center.y) < crosshairSize ||
-        abs(uv.y - center.y) < crosshairThickness && abs(uv.x - center.x) < crosshairSize) {
+    // Calculate aspect ratio
+    float aspectRatio = uResolution.x / uResolution.y;
+
+    // Adjust UV coordinates for aspect ratio
+    vec2 adjustedUV = (uv - center) * vec2(aspectRatio, 1.0) + center;
+
+    if (abs(adjustedUV.x - center.x) < crosshairThickness && abs(adjustedUV.y - center.y) < crosshairSize ||
+        abs(adjustedUV.y - center.y) < crosshairThickness && abs(adjustedUV.x - center.x) < crosshairSize) {
         fragColor = vec4(1.0, 0.0, 0.0, 1.0);
     } else {
         fragColor = vec4(litColor, 1.0);

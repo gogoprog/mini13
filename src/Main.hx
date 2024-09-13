@@ -84,10 +84,14 @@ class Main {
         for(x in 0...size) {
             for(z in 0...size) {
                 addCube(x, 0, z);
-                var h = Std.int(Math.random() * 3);
 
-                for(y in 1...h) {
-                    addCube(x, y, z);
+                if(Math.random() > 0.9) {
+                    var h = Std.int(Math.random() * 3);
+                    h = 2;
+
+                    for(y in 1...h) {
+                        addCube(x, y, z);
+                    }
                 }
             }
         }
@@ -112,7 +116,7 @@ class Main {
         var playerPosition = [size/2, 10.0, size/2];
         var playerVelocity = [0.0, 0.0, 0.0];
         var playerAcceleration = [0.0, 0.0, 0.0];
-        var gravity = -9.8;
+        var gravity = -15;
         var jumpVelocity = 5.0;
         var isOnGround = false;
         var acceleration = 20.0;
@@ -136,6 +140,9 @@ class Main {
             return [v[0] * scalar, v[1] * scalar, v[2] * scalar];
         }
         function checkCollision(x:Float, y:Float, z:Float):Bool {
+
+            if(y < 1) { return true; }
+
             var ix = Math.floor(x);
             var iy = Math.floor(y);
             var iz = Math.floor(z);
@@ -159,9 +166,9 @@ class Main {
                                     var dx = Math.max(Math.abs(x - cubeX) - 0.5, 0);
                                     var dy = Math.max(Math.abs(y - cubeY) - 0.5, 0);
                                     var dz = Math.max(Math.abs(z - cubeZ) - 0.5, 0);
-                                    var distance = Math.sqrt(dx*dx + dy*dy + dz*dz);
+                                    var distance = dx*dx + dy*dy + dz*dz;
 
-                                    if(distance < playerRadius) {
+                                    if(distance < playerRadius * playerRadius) {
                                         return true;
                                     }
                                 }
@@ -201,10 +208,13 @@ class Main {
         }
         var globalYaw = 0.0;
         var globalPitch = 0.0;
+        var lastTime = 0.0;
         function loop(t:Float) {
-            Shim.g.clear(Shim.g.COLOR_BUFFER_BIT | Shim.g.DEPTH_BUFFER_BIT);
+            var deltaTime = (t - lastTime) / 1000.0; // Convert to seconds
+            lastTime = t;
+            // Shim.g.clear(Shim.g.COLOR_BUFFER_BIT | Shim.g.DEPTH_BUFFER_BIT);
             Shim.g.uniform1f(timeUniformLocation, t);
-            var moveSpeed = 0.4;
+            var moveSpeed = 0.8;
             var mouseSensitivity = 0.002;
             cameraYaw -= mouseMove[0] * mouseSensitivity;
             cameraPitch += mouseMove[1] * mouseSensitivity;
@@ -214,7 +224,6 @@ class Main {
             var dirZ = Math.cos(cameraPitch) * Math.cos(cameraYaw);
             var rightX = Math.cos(cameraYaw);
             var rightZ = -Math.sin(cameraYaw);
-            var deltaTime = 1 / 60;
             playerAcceleration[0] = 0;
             playerAcceleration[2] = 0;
             var previous_y = playerPosition[1];
