@@ -1,4 +1,5 @@
 # Mini13
+![minicover](https://github.com/user-attachments/assets/a4974bbf-6add-439b-914a-e908f4497964)
 
 
 ## js13k
