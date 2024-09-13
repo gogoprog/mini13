@@ -62,6 +62,9 @@ class Main {
         inline function draw(count) {
             Shim.g.dr(Shim.g.TRIANGLES, 0, count);
         }
+        inline function draw2(count) {
+            Shim.g.dr(Shim.g.TRIANGLE_STRIP, 0, count);
+        }
         Shim.canvas.onclick = e -> Shim.canvas.requestPointerLock();
         Shim.canvas.onmousemove = function(e) {
             mouseMove[0] += e.movementX;
@@ -366,7 +369,7 @@ class Main {
                 // Monsters
                 Shim.g.uniform1i(useSphereUniformLocation, 1);
                 Shim.g.uniform1f(scaleUniformLocation, 5.0);
-                draw(1 * 72);
+                draw(1 * 60);
             }
 
             Shim.g.uniform1i(useSphereUniformLocation, 0);
