@@ -231,6 +231,9 @@ class Main {
         var globalYaw = 0.0;
         var globalPitch = 0.0;
         var lastTime = 0.0;
+        {
+            Shim.g.uniform2f(resolutionUniformLocation, Shim.canvas.width, Shim.canvas.height);
+        }
         function loop(t:Float) {
             if(!windowIsVisible) {
                 js.Browser.window.setTimeout(function() {loop(t+1);}, 1000);
@@ -333,9 +336,15 @@ class Main {
                 playerPosition[2] += pushDirection * 0.01;
             }
 
-            cameraPosition[0] = playerPosition[0];
-            cameraPosition[1] = playerPosition[1] + 0.2;
-            cameraPosition[2] = playerPosition[2];
+            {
+                cameraPosition[0] = playerPosition[0];
+                cameraPosition[1] = playerPosition[1] + 0.2;
+                cameraPosition[2] = playerPosition[2];
+                Shim.g.uniform3f(cameraPositionUniformLocation, cameraPosition[0], cameraPosition[1], cameraPosition[2]);
+                Shim.g.uniform1f(cameraYawUniformLocation, cameraYaw);
+                Shim.g.uniform1f(cameraPitchUniformLocation, cameraPitch);
+            }
+
             {
                 // Skybox
                 Shim.g.uniform1i(useSphereUniformLocation, 0);
@@ -343,18 +352,16 @@ class Main {
                 Shim.g.uniform1f(scaleUniformLocation, 1000.0);
                 draw(36);
             }
+
             {
                 // World
-                Shim.g.uniform3f(cameraPositionUniformLocation, cameraPosition[0], cameraPosition[1], cameraPosition[2]);
-                Shim.g.uniform1f(cameraYawUniformLocation, cameraYaw);
-                Shim.g.uniform1f(cameraPitchUniformLocation, cameraPitch);
-                Shim.g.uniform2f(resolutionUniformLocation, Shim.canvas.width, Shim.canvas.height);
                 Shim.g.uniform1f(globalYawUniformLocation, globalYaw);
                 Shim.g.uniform1f(globalPitchUniformLocation, globalPitch);
                 Shim.g.uniform1i(useCameraUniformLocation, 1);
                 Shim.g.uniform1f(scaleUniformLocation, 1.0);
                 draw(numCubes * 36);
             }
+
             Shim.g.uniform1i(useSphereUniformLocation, 0);
             mouseMove[0] = mouseMove[1] = 0;
             js.Browser.window.requestAnimationFrame(loop);
