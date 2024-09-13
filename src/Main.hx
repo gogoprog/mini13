@@ -24,12 +24,30 @@ class Main {
         }
         inline function compileShader(a) {
             Shim.g.compileShader(a);
+#if dev
+
+            if(!Shim.g.getShaderParameter(a, Shim.g.COMPILE_STATUS)) {
+                // trace("An error occurred compiling the shaders: " + Shim.g.getShaderInfoLog(a));
+                trace("An error occurred compiling the shaders: ");
+                trace(Shim.g.getShaderInfoLog(a));
+            }
+
+#end
         }
         inline function attachShader(a, b) {
             Shim.g.aS(a, b);
         }
         inline function linkProgram(a) {
             Shim.g.lo(a);
+#if dev
+
+            if(!Shim.g.getProgramParameter(a, Shim.g.LINK_STATUS)) {
+                // trace("An error occurred compiling the shaders: " + Shim.g.getShaderInfoLog(a));
+                trace("An error occurred linking the program: ");
+                trace(Shim.g.getProgramInfoLog(a));
+            }
+
+#end
         }
         inline function useProgram(a) {
             Shim.g.ug(a);
@@ -55,11 +73,11 @@ class Main {
             return untyped keys[str];
         }
         var program;
-        var src = Macros.getFileContent("src/cube_vs.glsl");
+        var src = Macros.getFileContent("src/vs.glsl");
         var vs = createShader(vertexShader());
         shaderSource(vs, src);
         compileShader(vs);
-        var src = Macros.getFileContent("src/cube_fs.glsl");
+        var src = Macros.getFileContent("src/fs.glsl");
         var fs = createShader(fragmentShader());
         shaderSource(fs, src);
         compileShader(fs);
@@ -79,7 +97,7 @@ class Main {
             data[dataLen] = x | (y << 8) | (z << 16);
             ++dataLen;
         }
-        var size = 90;
+        var size = 30;
 
         for(x in 0...size) {
             for(z in 0...size) {
