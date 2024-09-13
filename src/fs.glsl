@@ -55,6 +55,11 @@ void main() {
         vec3 skyColor = mix(skyColorBottom, skyColorTop, uv.y);
 
         litColor = mix(skyColor, cloudColor, cloudDensity);
+    }
+    else if(uScale < 0.1)
+    {
+        litColor = vec3(0.2, 0.1, 0.1);
+
 
     } else {
         vec3 baseColor;

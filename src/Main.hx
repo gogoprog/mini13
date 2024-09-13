@@ -147,8 +147,7 @@ class Main {
         var maxSpeed = 4.0;
         var lastShotTime = 0.0;
         var shotCooldown = 0.1;
-        var bulletSpeed = 1.0;
-        var bulletRange = 20.0;
+        var bulletSpeed = 10.0;
         var bulletSpread = 0.0;
         var bulletsPerShot = 8;
         var resolutionUniformLocation = Shim.g.getUniformLocation(program, "uResolution");
@@ -211,7 +210,7 @@ class Main {
         var sphereDirectionChangeTime:Array<Float> = [];
         var directionChangeInterval = 2000.0; // Change direction every 2 seconds
         // Modify the sphere initialization code
-        var numSpheres = 10; // You can adjust this number
+        var numSpheres = 13; // You can adjust this number
         var spherePositions = new js.lib.Float32Array(numSpheres * 3);
 
         for(i in 0...numSpheres) {
@@ -228,7 +227,7 @@ class Main {
             Shim.g.uniform2f(resolutionUniformLocation, Shim.canvas.width, Shim.canvas.height);
         }
         var bullets:Array< {position:Array<Float>, velocity:Array<Float>, timeAlive:Float}> = [];
-        var maxBulletLifetime = 10.0; // Bullets disappear after 2 seconds
+        var maxBulletLifetime = 10.0;
         function shootShotgun(currentTime:Float) {
             if(currentTime - lastShotTime < shotCooldown) { return; }
 
@@ -398,9 +397,11 @@ class Main {
                     bullet.position[0] += bullet.velocity[0] * deltaTime;
                     bullet.position[1] += bullet.velocity[1] * deltaTime;
                     bullet.position[2] += bullet.velocity[2] * deltaTime;
-                    // if(checkCollision(bullet.position[0], bullet.position[1], bullet.position[2])) {
-                    //     return false;
-                    // }
+
+                    if(checkCollision(bullet.position[0], bullet.position[1], bullet.position[2])) {
+                        return false;
+                    }
+
                     bulletPositions[j * 3] = bullet.position[0];
                     bulletPositions[j * 3 + 1] = bullet.position[1];
                     bulletPositions[j * 3 + 2] = bullet.position[2];
@@ -408,9 +409,8 @@ class Main {
                     return true;
                 });
                 Shim.g.uniform3fv(spheresUniformLocation, bulletPositions);
-                Shim.g.uniform1f(scaleUniformLocation, 0.05);
+                Shim.g.uniform1f(scaleUniformLocation, 0.02);
                 draw(bullets.length * 60);
-                trace(bullets.length);
             }
 
             Shim.g.uniform1i(useSphereUniformLocation, 0);
